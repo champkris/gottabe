@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\AdminMerchantController;
 use App\Http\Controllers\Admin\AdminCreatorController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\Merchant\MerchantDashboardController;
 use App\Http\Controllers\Merchant\MerchantProductController;
 use App\Http\Controllers\Merchant\MerchantOrderController;
@@ -124,6 +125,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Creators management
         Route::get('/creators', [AdminCreatorController::class, 'index']);
+        Route::post('/creators', [AdminCreatorController::class, 'store']);
         Route::get('/creators/{creator}', [AdminCreatorController::class, 'show']);
         Route::put('/creators/{creator}/approve', [AdminCreatorController::class, 'approve']);
         Route::put('/creators/{creator}/reject', [AdminCreatorController::class, 'reject']);
@@ -151,6 +153,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/categories/{category}', [AdminCategoryController::class, 'update']);
         Route::delete('/categories/{category}', [AdminCategoryController::class, 'destroy']);
         Route::post('/categories/{category}/toggle', [AdminCategoryController::class, 'toggleStatus']);
+
+        // Products management
+        Route::get('/products', [AdminProductController::class, 'index']);
+        Route::get('/products/{product}', [AdminProductController::class, 'show']);
+        Route::put('/products/{product}', [AdminProductController::class, 'update']);
+        Route::delete('/products/{product}', [AdminProductController::class, 'destroy']);
+        Route::post('/products/{product}/toggle-status', [AdminProductController::class, 'toggleStatus']);
+        Route::post('/products/{product}/toggle-featured', [AdminProductController::class, 'toggleFeatured']);
+        Route::post('/products/bulk-update', [AdminProductController::class, 'bulkUpdate']);
 
         // Platform settings
         Route::get('/settings', [AdminDashboardController::class, 'settings']);

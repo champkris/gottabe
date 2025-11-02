@@ -7,6 +7,8 @@ use App\Models\Merchant;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AdminCreatorController extends Controller
 {
@@ -57,6 +59,66 @@ class AdminCreatorController extends Controller
         });
 
         return response()->json($creators);
+    }
+
+    /**
+     * Create new creator account
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'business_name' => 'required|string|max:255',
+            'business_description' => 'nullable|string',
+            'business_email' => 'required|email',
+            'business_phone' => 'nullable|string|max:20',
+            'business_address' => 'nullable|string',
+            'commission_rate' => 'required|numeric|min:0|max:100',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // Create user account
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'role' => 'creator',
+                'phone' => $validated['phone'] ?? null,
+                'address' => $validated['address'] ?? null,
+            ]);
+
+            // Create creator profile
+            $creator = Merchant::create([
+                'user_id' => $user->id,
+                'business_name' => $validated['business_name'],
+                'slug' => Str::slug($validated['business_name']),
+                'business_description' => $validated['business_description'] ?? null,
+                'business_email' => $validated['business_email'],
+                'business_phone' => $validated['business_phone'] ?? null,
+                'business_address' => $validated['business_address'] ?? null,
+                'commission_rate' => $validated['commission_rate'],
+                'is_approved' => true,
+                'approved_at' => now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Creator created successfully',
+                'creator' => $creator->load('user'),
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to create creator',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

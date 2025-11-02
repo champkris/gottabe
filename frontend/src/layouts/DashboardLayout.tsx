@@ -20,7 +20,7 @@ export default function DashboardLayout() {
   const adminLinks = [
     { to: '/admin', label: 'Dashboard' },
     { to: '/admin/creators', label: 'Creators' },
-    { to: '/admin/merchants', label: 'Merchants (Legacy)' },
+    { to: '/admin/products', label: 'Products' },
     { to: '/admin/orders', label: 'Orders' },
     { to: '/admin/categories', label: 'Categories' },
     { to: '/admin/settings', label: 'Settings' },

@@ -35,6 +35,7 @@ import MerchantSettings from '@/pages/merchant/Settings'
 import AdminDashboard from '@/pages/admin/Dashboard'
 import AdminMerchants from '@/pages/admin/Merchants'
 import AdminCreators from '@/pages/admin/Creators'
+import AdminProducts from '@/pages/admin/Products'
 import AdminOrders from '@/pages/admin/Orders'
 import AdminCategories from '@/pages/admin/Categories'
 import AdminSettings from '@/pages/admin/Settings'
@@ -118,6 +119,7 @@ function App() {
         <Route index element={<AdminDashboard />} />
         <Route path="merchants" element={<AdminMerchants />} />
         <Route path="creators" element={<AdminCreators />} />
+        <Route path="products" element={<AdminProducts />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="categories" element={<AdminCategories />} />
         <Route path="settings" element={<AdminSettings />} />
