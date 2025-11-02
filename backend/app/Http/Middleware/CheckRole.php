@@ -23,15 +23,15 @@ class CheckRole
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        // Additional check for merchant approval
-        if ($request->user()->role === 'merchant') {
-            $merchant = $request->user()->merchant;
-            if (!$merchant || !$merchant->is_approved) {
-                // Allow access to profile and basic merchant info routes
-                $allowedRoutes = ['api.merchant.profile', 'api.merchant.status'];
+        // Additional check for creator approval
+        if ($request->user()->role === 'creator') {
+            $creator = $request->user()->creator ?? $request->user()->merchant;
+            if (!$creator || !$creator->is_approved) {
+                // Allow access to profile and basic creator info routes
+                $allowedRoutes = ['api.creator.profile', 'api.creator.status'];
                 if (!$request->routeIs($allowedRoutes)) {
                     return response()->json([
-                        'message' => 'Your merchant account is pending approval',
+                        'message' => 'Your creator account is pending approval',
                         'is_approved' => false,
                     ], 403);
                 }

@@ -15,7 +15,7 @@ interface RegisterFormData {
   password_confirmation: string
   phone: string
   address: string
-  role: 'customer' | 'merchant'
+  role: 'customer' | 'creator'
   business_name?: string
   business_description?: string
   business_email?: string
@@ -27,7 +27,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [accountType, setAccountType] = useState<'customer' | 'merchant'>('customer')
+  const [accountType, setAccountType] = useState<'customer' | 'creator'>('customer')
   const navigate = useNavigate()
   const { register: registerUser } = useAuthStore()
 
@@ -100,16 +100,16 @@ export default function Register() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setAccountType('merchant')}
+                    onClick={() => setAccountType('creator')}
                     className={`p-4 border-2 rounded-lg transition ${
-                      accountType === 'merchant'
+                      accountType === 'creator'
                         ? 'border-primary bg-primary/5'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <Store className="h-6 w-6 mx-auto mb-2" />
-                    <p className="font-medium">Merchant</p>
-                    <p className="text-xs text-gray-600">Sell products</p>
+                    <p className="font-medium">Creator</p>
+                    <p className="text-xs text-gray-600">Design products</p>
                   </button>
                 </div>
               </div>
@@ -291,10 +291,10 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* Business Information (only for merchants) */}
-              {accountType === 'merchant' && (
+              {/* Studio Information (only for creators) */}
+              {accountType === 'creator' && (
                 <div className="space-y-4 pt-4 border-t">
-                  <h3 className="text-lg font-semibold">Business Information</h3>
+                  <h3 className="text-lg font-semibold">Studio Information</h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Business Name */}
@@ -306,7 +306,7 @@ export default function Register() {
                         id="business_name"
                         placeholder="My Store"
                         {...register('business_name', {
-                          required: accountType === 'merchant' ? 'Business name is required' : false,
+                          required: accountType === 'creator' ? 'Business name is required' : false,
                         })}
                       />
                       {errors.business_name && (
@@ -324,7 +324,7 @@ export default function Register() {
                         type="email"
                         placeholder="store@example.com"
                         {...register('business_email', {
-                          required: accountType === 'merchant' ? 'Business email is required' : false,
+                          required: accountType === 'creator' ? 'Business email is required' : false,
                           pattern: {
                             value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                             message: 'Invalid email address',
@@ -346,7 +346,7 @@ export default function Register() {
                         type="tel"
                         placeholder="(555) 987-6543"
                         {...register('business_phone', {
-                          required: accountType === 'merchant' ? 'Business phone is required' : false,
+                          required: accountType === 'creator' ? 'Business phone is required' : false,
                         })}
                       />
                       {errors.business_phone && (
@@ -363,7 +363,7 @@ export default function Register() {
                         id="business_address"
                         placeholder="456 Business Ave"
                         {...register('business_address', {
-                          required: accountType === 'merchant' ? 'Business address is required' : false,
+                          required: accountType === 'creator' ? 'Business address is required' : false,
                         })}
                       />
                       {errors.business_address && (
@@ -383,7 +383,7 @@ export default function Register() {
                       rows={3}
                       className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                       {...register('business_description', {
-                        required: accountType === 'merchant' ? 'Business description is required' : false,
+                        required: accountType === 'creator' ? 'Business description is required' : false,
                       })}
                     />
                     {errors.business_description && (

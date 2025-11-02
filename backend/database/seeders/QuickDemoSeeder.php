@@ -21,11 +21,11 @@ class QuickDemoSeeder extends Seeder
             'role' => 'customer',
         ]);
 
-        $merchantUser = User::create([
-            'name' => 'Sarah Merchant',
-            'email' => 'merchant@demo.com',
+        $creatorUser = User::create([
+            'name' => 'Sarah Creator',
+            'email' => 'creator@demo.com',
             'password' => Hash::make('password'),
-            'role' => 'merchant',
+            'role' => 'creator',
         ]);
 
         $admin = User::create([
@@ -35,16 +35,16 @@ class QuickDemoSeeder extends Seeder
             'role' => 'admin',
         ]);
 
-        // Create merchant profile
-        $merchant = Merchant::create([
-            'user_id' => $merchantUser->id,
-            'business_name' => 'ToBeAwesome Store',
-            'slug' => 'tobeawesome-store',
-            'business_description' => 'Premium products for awesome people',
-            'business_email' => 'store@tobeawesome.com',
+        // Create creator profile
+        $creator = Merchant::create([
+            'user_id' => $creatorUser->id,
+            'business_name' => 'ToBeAwesome Studio',
+            'slug' => 'tobeawesome-studio',
+            'business_description' => 'Premium designs and collections for awesome people',
+            'business_email' => 'studio@tobeawesome.com',
             'business_phone' => '555-0123',
             'business_address' => '123 Awesome Street, Bangkok',
-            'commission_rate' => 10,
+            'commission_rate' => 30,
             'is_approved' => true,
             'approved_at' => now(),
         ]);
@@ -74,7 +74,7 @@ class QuickDemoSeeder extends Seeder
         // Create awesome products
         $products = [
             [
-                'merchant_id' => $merchant->id,
+                'merchant_id' => $creator->id,
                 'category_id' => $electronics->id,
                 'name' => 'Awesome Wireless Headphones',
                 'slug' => 'awesome-wireless-headphones',
@@ -89,7 +89,7 @@ class QuickDemoSeeder extends Seeder
                 'images' => json_encode(['https://via.placeholder.com/400x400/4F46E5/ffffff?text=Headphones']),
             ],
             [
-                'merchant_id' => $merchant->id,
+                'merchant_id' => $creator->id,
                 'category_id' => $electronics->id,
                 'name' => 'Smart Watch Pro',
                 'slug' => 'smart-watch-pro',
@@ -104,7 +104,7 @@ class QuickDemoSeeder extends Seeder
                 'images' => json_encode(['https://via.placeholder.com/400x400/10B981/ffffff?text=SmartWatch']),
             ],
             [
-                'merchant_id' => $merchant->id,
+                'merchant_id' => $creator->id,
                 'category_id' => $fashion->id,
                 'name' => 'Awesome Cotton T-Shirt',
                 'slug' => 'awesome-cotton-tshirt',
@@ -118,7 +118,7 @@ class QuickDemoSeeder extends Seeder
                 'images' => json_encode(['https://via.placeholder.com/400x400/F59E0B/ffffff?text=T-Shirt']),
             ],
             [
-                'merchant_id' => $merchant->id,
+                'merchant_id' => $creator->id,
                 'category_id' => $fashion->id,
                 'name' => 'Premium Leather Bag',
                 'slug' => 'premium-leather-bag',
@@ -132,7 +132,7 @@ class QuickDemoSeeder extends Seeder
                 'images' => json_encode(['https://via.placeholder.com/400x400/7C3AED/ffffff?text=Leather+Bag']),
             ],
             [
-                'merchant_id' => $merchant->id,
+                'merchant_id' => $creator->id,
                 'category_id' => $home->id,
                 'name' => 'Minimalist Desk Lamp',
                 'slug' => 'minimalist-desk-lamp',
@@ -145,7 +145,7 @@ class QuickDemoSeeder extends Seeder
                 'images' => json_encode(['https://via.placeholder.com/400x400/EC4899/ffffff?text=Desk+Lamp']),
             ],
             [
-                'merchant_id' => $merchant->id,
+                'merchant_id' => $creator->id,
                 'category_id' => $electronics->id,
                 'name' => 'Wireless Charging Pad',
                 'slug' => 'wireless-charging-pad',
@@ -167,7 +167,7 @@ class QuickDemoSeeder extends Seeder
         echo "\n✅ Demo data created successfully!\n";
         echo "\nLogin Credentials:\n";
         echo "Customer: customer@demo.com / password\n";
-        echo "Merchant: merchant@demo.com / password\n";
+        echo "Creator: creator@demo.com / password\n";
         echo "Admin: admin@demo.com / password\n\n";
     }
 }

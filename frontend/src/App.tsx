@@ -88,11 +88,11 @@ function App() {
         <Route path="profile" element={<Profile />} />
       </Route>
 
-      {/* Merchant Dashboard Routes */}
+      {/* Creator Dashboard Routes */}
       <Route
-        path="/merchant"
+        path="/creator"
         element={
-          <ProtectedRoute roles={['merchant']}>
+          <ProtectedRoute roles={['creator']}>
             <DashboardLayout />
           </ProtectedRoute>
         }
@@ -101,7 +101,6 @@ function App() {
         <Route path="products" element={<MerchantProducts />} />
         <Route path="products/new" element={<MerchantProductForm />} />
         <Route path="products/:id/edit" element={<MerchantProductForm />} />
-        <Route path="orders" element={<MerchantOrders />} />
         <Route path="analytics" element={<MerchantAnalytics />} />
         <Route path="settings" element={<MerchantSettings />} />
       </Route>
@@ -128,8 +127,8 @@ function App() {
         element={
           user?.role === 'admin' ? (
             <Navigate to="/admin" replace />
-          ) : user?.role === 'merchant' ? (
-            <Navigate to="/merchant" replace />
+          ) : user?.role === 'creator' ? (
+            <Navigate to="/creator" replace />
           ) : (
             <Navigate to="/" replace />
           )

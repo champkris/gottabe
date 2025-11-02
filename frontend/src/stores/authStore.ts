@@ -6,10 +6,10 @@ interface User {
   id: number
   name: string
   email: string
-  role: 'customer' | 'merchant' | 'admin'
+  role: 'customer' | 'creator' | 'admin'
   phone?: string
   address?: string
-  merchant?: {
+  creator?: {
     id: number
     business_name: string
     slug: string

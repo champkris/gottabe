@@ -37,11 +37,19 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the merchant profile for the user.
+     * Get the creator profile for the user.
+     */
+    public function creator(): HasOne
+    {
+        return $this->hasOne(Merchant::class);
+    }
+
+    /**
+     * Get the merchant profile for the user (alias for backward compatibility).
      */
     public function merchant(): HasOne
     {
-        return $this->hasOne(Merchant::class);
+        return $this->creator();
     }
 
     /**
@@ -69,11 +77,19 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is a merchant.
+     * Check if user is a creator.
+     */
+    public function isCreator(): bool
+    {
+        return $this->role === 'creator';
+    }
+
+    /**
+     * Check if user is a merchant (alias for backward compatibility).
      */
     public function isMerchant(): bool
     {
-        return $this->role === 'merchant';
+        return $this->isCreator();
     }
 
     /**
