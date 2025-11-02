@@ -75,7 +75,7 @@ export default function ProductForm() {
   const fetchProduct = async () => {
     try {
       setLoading(true)
-      const response = await api.get(`/merchant/products/${id}`)
+      const response = await api.get(`/creator/products/${id}`)
       const product = response.data.product || response.data
       reset({
         name: product.name,
@@ -127,14 +127,14 @@ export default function ProductForm() {
       }
 
       if (isEditMode) {
-        await api.put(`/merchant/products/${id}`, productData)
+        await api.put(`/creator/products/${id}`, productData)
         toast.success('Product updated successfully')
       } else {
-        await api.post('/merchant/products', productData)
+        await api.post('/creator/products', productData)
         toast.success('Product created successfully')
       }
 
-      navigate('/merchant/products')
+      navigate('/creator/products')
     } catch (error: any) {
       console.error('Failed to save product:', error)
       toast.error(error.response?.data?.message || 'Failed to save product')
@@ -159,7 +159,7 @@ export default function ProductForm() {
       {/* Header */}
       <div className="mb-6">
         <Link
-          to="/merchant/products"
+          to="/creator/products"
           className="inline-flex items-center text-gray-600 hover:text-primary mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -449,7 +449,7 @@ export default function ProductForm() {
                   <Save className="h-4 w-4 mr-2" />
                   {loading ? 'Saving...' : isEditMode ? 'Update Product' : 'Create Product'}
                 </Button>
-                <Link to="/merchant/products" className="block">
+                <Link to="/creator/products" className="block">
                   <Button type="button" variant="outline" className="w-full">
                     <X className="h-4 w-4 mr-2" />
                     Cancel

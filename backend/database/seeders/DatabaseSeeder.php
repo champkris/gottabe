@@ -23,13 +23,32 @@ class DatabaseSeeder extends Seeder
             'address' => '123 Customer Street, City',
         ]);
 
-        $merchantUser = User::create([
-            'name' => 'Jane Merchant',
-            'email' => 'merchant@demo.com',
+        // Create Creators
+        $creator1User = User::create([
+            'name' => 'Sarah Creator',
+            'email' => 'creator@demo.com',
             'password' => Hash::make('password'),
-            'role' => 'merchant',
+            'role' => 'creator',
             'phone' => '098-765-4321',
-            'address' => '456 Merchant Avenue, City',
+            'address' => '456 Creator Avenue, Bangkok',
+        ]);
+
+        $creator2User = User::create([
+            'name' => 'Mike Designer',
+            'email' => 'mike@demo.com',
+            'password' => Hash::make('password'),
+            'role' => 'creator',
+            'phone' => '098-765-4322',
+            'address' => '789 Design Street, Bangkok',
+        ]);
+
+        $creator3User = User::create([
+            'name' => 'Emma Artist',
+            'email' => 'emma@demo.com',
+            'password' => Hash::make('password'),
+            'role' => 'creator',
+            'phone' => '098-765-4323',
+            'address' => '321 Art Boulevard, Bangkok',
         ]);
 
         $admin = User::create([
@@ -39,16 +58,44 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
         ]);
 
-        // Create Merchant
-        $merchant = Merchant::create([
-            'user_id' => $merchantUser->id,
-            'business_name' => 'ToBeAwesome Store',
-            'slug' => 'tobeawesome-store',
-            'business_description' => 'Your one-stop shop for amazing products',
-            'business_email' => 'store@tobeawesome.com',
+        // Create Creator 1 - ToBeAwesome Studio (30% commission)
+        $creator1 = Merchant::create([
+            'user_id' => $creator1User->id,
+            'business_name' => 'ToBeAwesome Studio',
+            'slug' => 'tobeawesome-studio',
+            'business_description' => 'Premium designs and collections for awesome people',
+            'business_email' => 'studio@tobeawesome.com',
             'business_phone' => '555-123-4567',
-            'business_address' => '789 Business Plaza, City',
-            'commission_rate' => 10.00,
+            'business_address' => '789 Creative Plaza, Bangkok',
+            'commission_rate' => 30.00,
+            'is_approved' => true,
+            'approved_at' => now(),
+        ]);
+
+        // Create Creator 2 - TechVibe Designs (25% commission)
+        $creator2 = Merchant::create([
+            'user_id' => $creator2User->id,
+            'business_name' => 'TechVibe Designs',
+            'slug' => 'techvibe-designs',
+            'business_description' => 'Modern tech-inspired designs for the digital age',
+            'business_email' => 'hello@techvibe.com',
+            'business_phone' => '555-234-5678',
+            'business_address' => '456 Innovation Center, Bangkok',
+            'commission_rate' => 25.00,
+            'is_approved' => true,
+            'approved_at' => now(),
+        ]);
+
+        // Create Creator 3 - Artistic Touch (35% commission)
+        $creator3 = Merchant::create([
+            'user_id' => $creator3User->id,
+            'business_name' => 'Artistic Touch',
+            'slug' => 'artistic-touch',
+            'business_description' => 'Handcrafted artistic designs with a personal touch',
+            'business_email' => 'contact@artistictouch.com',
+            'business_phone' => '555-345-6789',
+            'business_address' => '123 Gallery District, Bangkok',
+            'commission_rate' => 35.00,
             'is_approved' => true,
             'approved_at' => now(),
         ]);
@@ -75,9 +122,11 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        // Create Products with real image URLs from Unsplash
+        // Create Products - Distributed among creators
         $products = [
+            // Creator 1 - ToBeAwesome Studio (Electronics)
             [
+                'merchant_id' => $creator1->id,
                 'category_id' => $electronics->id,
                 'name' => 'Awesome Wireless Headphones',
                 'slug' => 'awesome-wireless-headphones',
@@ -92,6 +141,7 @@ class DatabaseSeeder extends Seeder
                 'images' => ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500'],
             ],
             [
+                'merchant_id' => $creator1->id,
                 'category_id' => $electronics->id,
                 'name' => 'Smart Watch Pro',
                 'slug' => 'smart-watch-pro',
@@ -105,20 +155,10 @@ class DatabaseSeeder extends Seeder
                 'total_reviews' => 89,
                 'images' => ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500'],
             ],
+
+            // Creator 2 - TechVibe Designs (Electronics)
             [
-                'category_id' => $fashion->id,
-                'name' => 'Premium Leather Bag',
-                'slug' => 'premium-leather-bag',
-                'description' => 'Handcrafted genuine leather messenger bag. Perfect for work or travel with multiple compartments.',
-                'price' => 3999.00,
-                'stock' => 25,
-                'is_featured' => true,
-                'is_active' => true,
-                'rating' => 4.8,
-                'total_reviews' => 67,
-                'images' => ['https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500'],
-            ],
-            [
+                'merchant_id' => $creator2->id,
                 'category_id' => $electronics->id,
                 'name' => 'Wireless Bluetooth Speaker',
                 'slug' => 'wireless-bluetooth-speaker',
@@ -132,6 +172,37 @@ class DatabaseSeeder extends Seeder
                 'images' => ['https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500'],
             ],
             [
+                'merchant_id' => $creator2->id,
+                'category_id' => $electronics->id,
+                'name' => 'USB-C Fast Charger',
+                'slug' => 'usb-c-fast-charger',
+                'description' => 'Ultra-fast charging with multiple ports. Compatible with all devices.',
+                'price' => 799.00,
+                'sale_price' => 599.00,
+                'stock' => 100,
+                'is_active' => true,
+                'rating' => 4.6,
+                'total_reviews' => 78,
+                'images' => ['https://images.unsplash.com/photo-1591290619762-d4b2b5a2b0c0?w=500'],
+            ],
+
+            // Creator 3 - Artistic Touch (Fashion & Home)
+            [
+                'merchant_id' => $creator3->id,
+                'category_id' => $fashion->id,
+                'name' => 'Premium Leather Bag',
+                'slug' => 'premium-leather-bag',
+                'description' => 'Handcrafted genuine leather messenger bag. Perfect for work or travel with multiple compartments.',
+                'price' => 3999.00,
+                'stock' => 25,
+                'is_featured' => true,
+                'is_active' => true,
+                'rating' => 4.8,
+                'total_reviews' => 67,
+                'images' => ['https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500'],
+            ],
+            [
+                'merchant_id' => $creator3->id,
                 'category_id' => $fashion->id,
                 'name' => 'Designer Sunglasses',
                 'slug' => 'designer-sunglasses',
@@ -145,6 +216,7 @@ class DatabaseSeeder extends Seeder
                 'images' => ['https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500'],
             ],
             [
+                'merchant_id' => $creator3->id,
                 'category_id' => $homeAndLiving->id,
                 'name' => 'Ceramic Plant Pot Set',
                 'slug' => 'ceramic-plant-pot-set',
@@ -156,18 +228,30 @@ class DatabaseSeeder extends Seeder
                 'total_reviews' => 38,
                 'images' => ['https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500'],
             ],
+            [
+                'merchant_id' => $creator3->id,
+                'category_id' => $homeAndLiving->id,
+                'name' => 'Handmade Wall Art',
+                'slug' => 'handmade-wall-art',
+                'description' => 'Original abstract canvas art. Adds personality to any room.',
+                'price' => 2499.00,
+                'stock' => 15,
+                'is_featured' => true,
+                'is_active' => true,
+                'rating' => 4.9,
+                'total_reviews' => 56,
+                'images' => ['https://images.unsplash.com/photo-1561214115-f2f134cc4912?w=500'],
+            ],
         ];
 
         foreach ($products as $productData) {
-            Product::create(array_merge($productData, [
-                'merchant_id' => $merchant->id,
-            ]));
+            Product::create($productData);
         }
 
         echo "\n✅ Database seeded successfully!\n";
         echo "📧 Demo accounts:\n";
         echo "   Customer: customer@demo.com / password\n";
-        echo "   Merchant: merchant@demo.com / password\n";
+        echo "   Creator: creator@demo.com / password\n";
         echo "   Admin: admin@demo.com / password\n\n";
     }
 }

@@ -5,10 +5,9 @@ import {
   Package,
   ShoppingCart,
   TrendingUp,
-  AlertCircle,
-  Clock,
-  CheckCircle,
-  XCircle,
+  Percent,
+  Eye,
+  Star,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -16,26 +15,42 @@ import { formatCurrency } from '@/lib/utils'
 import api from '@/lib/axios'
 import toast from 'react-hot-toast'
 
-interface DashboardStats {
+interface DashboardData {
   total_sales: number
+  commission_rate: number
+  commission_earned: number
+  total_revenue: number
   total_orders: number
   total_products: number
-  total_revenue: number
-  pending_orders: number
-  low_stock_products: number
-  recent_orders: Array<{
+  active_products: number
+  current_month_sales: number
+  last_month_sales: number
+  sales_growth: number
+  best_selling_products: Array<{
     id: number
-    status: string
-    total: number
-    created_at: string
-    user: {
+    name: string
+    price: number
+    units_sold: number
+    revenue: number
+    commission: number
+    category: {
       name: string
     }
+    images: string[]
   }>
+  sales_chart: Array<{
+    date: string
+    sales: number
+    orders: number
+  }>
+  creator: {
+    business_name: string
+    commission_rate: number
+  }
 }
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -45,8 +60,8 @@ export default function Dashboard() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true)
-      const response = await api.get('/merchant/dashboard')
-      setStats(response.data)
+      const response = await api.get('/creator/dashboard')
+      setData(response.data)
     } catch (error: any) {
       console.error('Failed to fetch dashboard data:', error)
       toast.error('Failed to load dashboard data')
@@ -68,70 +83,47 @@ export default function Dashboard() {
 
   const statCards = [
     {
-      title: 'Total Revenue',
-      value: formatCurrency(stats?.total_revenue || 0),
+      title: 'Total Sales',
+      value: formatCurrency(data?.total_sales || 0),
       icon: DollarSign,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-100',
+      description: 'All time revenue',
+    },
+    {
+      title: 'Commission Earned',
+      value: formatCurrency(data?.commission_earned || 0),
+      icon: Percent,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
-      description: 'Total earnings',
+      description: `${data?.commission_rate || 0}% commission rate`,
     },
     {
       title: 'Total Orders',
-      value: stats?.total_orders || 0,
+      value: data?.total_orders || 0,
       icon: ShoppingCart,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100',
-      description: 'All time orders',
-    },
-    {
-      title: 'Products',
-      value: stats?.total_products || 0,
-      icon: Package,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',
-      description: 'Active listings',
+      description: 'Products sold',
     },
     {
-      title: 'Pending Orders',
-      value: stats?.pending_orders || 0,
-      icon: Clock,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-100',
-      description: 'Need attention',
+      title: 'Active Products',
+      value: `${data?.active_products || 0}/${data?.total_products || 0}`,
+      icon: Package,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-100',
+      description: 'Live listings',
     },
   ]
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'delivered':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
-      case 'cancelled':
-        return <XCircle className="h-4 w-4 text-red-600" />
-      case 'pending':
-        return <Clock className="h-4 w-4 text-yellow-600" />
-      default:
-        return <Package className="h-4 w-4 text-blue-600" />
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-blue-100 text-blue-800',
-      processing: 'bg-purple-100 text-purple-800',
-      shipped: 'bg-indigo-100 text-indigo-800',
-      delivered: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800',
-    }
-    return colors[status] || 'bg-gray-100 text-gray-800'
-  }
 
   return (
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Merchant Dashboard</h1>
-        <p className="text-gray-600">Welcome back! Here's what's happening with your store.</p>
+        <h1 className="text-3xl font-bold mb-2">Creator Dashboard</h1>
+        <p className="text-gray-600">
+          Welcome back, {data?.creator.business_name}! Here's your performance overview.
+        </p>
       </div>
 
       {/* Stats Grid */}
@@ -157,13 +149,47 @@ export default function Dashboard() {
         })}
       </div>
 
+      {/* Monthly Performance */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Monthly Performance</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600 mb-2">This Month</p>
+              <p className="text-2xl font-bold text-primary">
+                {formatCurrency(data?.current_month_sales || 0)}
+              </p>
+            </div>
+            <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600 mb-2">Last Month</p>
+              <p className="text-2xl font-bold text-gray-700">
+                {formatCurrency(data?.last_month_sales || 0)}
+              </p>
+            </div>
+            <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600 mb-2">Growth</p>
+              <p
+                className={`text-2xl font-bold ${
+                  (data?.sales_growth || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}
+              >
+                {(data?.sales_growth || 0) >= 0 ? '+' : ''}
+                {data?.sales_growth || 0}%
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Orders */}
+        {/* Best Selling Products */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Recent Orders</CardTitle>
-              <Link to="/merchant/orders">
+              <CardTitle>Best Selling Products</CardTitle>
+              <Link to="/creator/products">
                 <Button variant="outline" size="sm">
                   View All
                 </Button>
@@ -171,55 +197,63 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            {stats?.recent_orders && stats.recent_orders.length > 0 ? (
+            {data?.best_selling_products && data.best_selling_products.length > 0 ? (
               <div className="space-y-4">
-                {stats.recent_orders.map((order) => (
+                {data.best_selling_products.map((product) => (
                   <div
-                    key={order.id}
+                    key={product.id}
                     className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100">
-                        {getStatusIcon(order.status)}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-semibold">Order #{order.id}</p>
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                              order.status
-                            )}`}
-                          >
-                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    <div className="flex items-center gap-4 flex-1">
+                      {product.images && product.images.length > 0 ? (
+                        <img
+                          src={
+                            typeof product.images === 'string'
+                              ? JSON.parse(product.images)[0]
+                              : product.images[0]
+                          }
+                          alt={product.name}
+                          className="w-16 h-16 object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                          <Package className="h-8 w-8 text-gray-400" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <h4 className="font-semibold mb-1">{product.name}</h4>
+                        <p className="text-sm text-gray-600 mb-1">
+                          {product.category?.name || 'Uncategorized'}
+                        </p>
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <span>{product.units_sold} units sold</span>
+                          <span>•</span>
+                          <span className="text-primary font-medium">
+                            {formatCurrency(product.revenue)}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600">{order.user.name}</p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(order.created_at).toLocaleDateString()}
-                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-primary">{formatCurrency(order.total)}</p>
-                      <Link to={`/merchant/orders/${order.id}`}>
-                        <Button variant="ghost" size="sm" className="mt-1">
-                          View
-                        </Button>
-                      </Link>
+                      <p className="text-sm text-gray-600 mb-1">Your Commission</p>
+                      <p className="font-bold text-green-600 text-lg">
+                        {formatCurrency(product.commission)}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <ShoppingCart className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                <p>No recent orders</p>
+              <div className="text-center py-12 text-gray-500">
+                <Package className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <p className="text-lg font-medium mb-2">No sales yet</p>
+                <p className="text-sm">Start creating and promoting your products!</p>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Quick Actions & Alerts */}
+        {/* Quick Actions & Info */}
         <div className="space-y-6">
           {/* Quick Actions */}
           <Card>
@@ -227,25 +261,19 @@ export default function Dashboard() {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Link to="/merchant/products/new">
+              <Link to="/creator/products/new">
                 <Button className="w-full justify-start">
                   <Package className="h-4 w-4 mr-2" />
                   Add New Product
                 </Button>
               </Link>
-              <Link to="/merchant/orders">
+              <Link to="/creator/products">
                 <Button variant="outline" className="w-full justify-start">
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Manage Orders
-                </Button>
-              </Link>
-              <Link to="/merchant/products">
-                <Button variant="outline" className="w-full justify-start">
-                  <Package className="h-4 w-4 mr-2" />
+                  <Eye className="h-4 w-4 mr-2" />
                   View Products
                 </Button>
               </Link>
-              <Link to="/merchant/analytics">
+              <Link to="/creator/analytics">
                 <Button variant="outline" className="w-full justify-start">
                   <TrendingUp className="h-4 w-4 mr-2" />
                   View Analytics
@@ -254,48 +282,65 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Alerts */}
-          <Card>
+          {/* Commission Info */}
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
             <CardHeader>
-              <CardTitle>Alerts</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Percent className="h-5 w-5 text-green-600" />
+                Commission Rate
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {stats?.pending_orders && stats.pending_orders > 0 ? (
-                <div className="flex items-start gap-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-yellow-900">
-                      {stats.pending_orders} Pending Order{stats.pending_orders > 1 ? 's' : ''}
-                    </p>
-                    <p className="text-xs text-yellow-700 mt-1">
-                      You have orders waiting to be processed
-                    </p>
-                  </div>
-                </div>
-              ) : null}
+            <CardContent>
+              <div className="text-center mb-4">
+                <p className="text-4xl font-bold text-green-600 mb-2">
+                  {data?.commission_rate || 0}%
+                </p>
+                <p className="text-sm text-gray-600">
+                  You earn {data?.commission_rate || 0}% on every sale
+                </p>
+              </div>
+              <div className="p-4 bg-white rounded-lg border border-green-200">
+                <p className="text-sm text-gray-600 mb-2">Total Earnings</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {formatCurrency(data?.commission_earned || 0)}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
-              {stats?.low_stock_products && stats.low_stock_products > 0 ? (
-                <div className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-red-900">
-                      {stats.low_stock_products} Low Stock Product
-                      {stats.low_stock_products > 1 ? 's' : ''}
-                    </p>
-                    <p className="text-xs text-red-700 mt-1">
-                      Some products are running low on stock
-                    </p>
-                  </div>
-                </div>
-              ) : null}
-
-              {(!stats?.pending_orders || stats.pending_orders === 0) &&
-              (!stats?.low_stock_products || stats.low_stock_products === 0) ? (
-                <div className="text-center py-4 text-gray-500">
-                  <CheckCircle className="h-10 w-10 mx-auto mb-2 text-green-500" />
-                  <p className="text-sm">All good! No alerts</p>
-                </div>
-              ) : null}
+          {/* Tips */}
+          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5 text-blue-600" />
+                Creator Tips
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex items-start gap-2">
+                <div className="w-2 h-2 rounded-full bg-blue-600 mt-1.5"></div>
+                <p className="text-gray-700">
+                  Create unique, high-quality product designs
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-2 h-2 rounded-full bg-blue-600 mt-1.5"></div>
+                <p className="text-gray-700">
+                  Use clear, attractive product images
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-2 h-2 rounded-full bg-blue-600 mt-1.5"></div>
+                <p className="text-gray-700">
+                  Write detailed product descriptions
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-2 h-2 rounded-full bg-blue-600 mt-1.5"></div>
+                <p className="text-gray-700">
+                  Monitor your best sellers and trends
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>

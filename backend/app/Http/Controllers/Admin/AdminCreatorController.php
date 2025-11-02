@@ -1,0 +1,159 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Merchant;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class AdminCreatorController extends Controller
+{
+    /**
+     * Get all creators with their stats
+     */
+    public function index(Request $request)
+    {
+        $query = Merchant::with('user')
+            ->select('merchants.*')
+            ->join('users', 'merchants.user_id', '=', 'users.id')
+            ->where('users.role', 'creator');
+
+        // Search
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('merchants.business_name', 'like', "%{$search}%")
+                    ->orWhere('users.name', 'like', "%{$search}%")
+                    ->orWhere('users.email', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by approval status
+        if ($request->has('status')) {
+            if ($request->status === 'approved') {
+                $query->where('merchants.is_approved', true);
+            } elseif ($request->status === 'pending') {
+                $query->where('merchants.is_approved', false);
+            }
+        }
+
+        $creators = $query->latest('merchants.created_at')->paginate(20);
+
+        // Get stats for each creator
+        $creators->each(function ($creator) {
+            $creator->total_products = $creator->products()->count();
+            $creator->active_products = $creator->products()->where('is_active', true)->count();
+            $creator->total_sales = DB::table('order_items')
+                ->join('products', 'order_items.product_id', '=', 'products.id')
+                ->where('products.merchant_id', $creator->id)
+                ->sum('order_items.subtotal');
+            $creator->total_orders = DB::table('order_items')
+                ->join('products', 'order_items.product_id', '=', 'products.id')
+                ->where('products.merchant_id', $creator->id)
+                ->distinct('order_items.order_id')
+                ->count('order_items.order_id');
+        });
+
+        return response()->json($creators);
+    }
+
+    /**
+     * Get single creator details
+     */
+    public function show($id)
+    {
+        $creator = Merchant::with(['user', 'products'])->findOrFail($id);
+
+        // Calculate stats
+        $creator->total_products = $creator->products()->count();
+        $creator->active_products = $creator->products()->where('is_active', true)->count();
+        $creator->total_sales = DB::table('order_items')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->where('products.merchant_id', $creator->id)
+            ->sum('order_items.subtotal');
+        $creator->total_orders = DB::table('order_items')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->where('products.merchant_id', $creator->id)
+            ->distinct('order_items.order_id')
+            ->count('order_items.order_id');
+
+        // Calculate commission earned
+        $creator->commission_earned = $creator->total_sales * ($creator->commission_rate / 100);
+
+        return response()->json($creator);
+    }
+
+    /**
+     * Update creator commission rate
+     */
+    public function updateCommission(Request $request, $id)
+    {
+        $request->validate([
+            'commission_rate' => 'required|numeric|min:0|max:100',
+        ]);
+
+        $creator = Merchant::findOrFail($id);
+        $creator->commission_rate = $request->commission_rate;
+        $creator->save();
+
+        return response()->json([
+            'message' => 'Commission rate updated successfully',
+            'creator' => $creator,
+        ]);
+    }
+
+    /**
+     * Approve creator account
+     */
+    public function approve($id)
+    {
+        $creator = Merchant::findOrFail($id);
+        $creator->is_approved = true;
+        $creator->approved_at = now();
+        $creator->save();
+
+        return response()->json([
+            'message' => 'Creator approved successfully',
+            'creator' => $creator,
+        ]);
+    }
+
+    /**
+     * Reject/suspend creator account
+     */
+    public function reject($id)
+    {
+        $creator = Merchant::findOrFail($id);
+        $creator->is_approved = false;
+        $creator->approved_at = null;
+        $creator->save();
+
+        return response()->json([
+            'message' => 'Creator account suspended',
+            'creator' => $creator,
+        ]);
+    }
+
+    /**
+     * Delete creator account
+     */
+    public function destroy($id)
+    {
+        $creator = Merchant::findOrFail($id);
+
+        // Check if creator has products
+        if ($creator->products()->count() > 0) {
+            return response()->json([
+                'message' => 'Cannot delete creator with existing products. Please delete products first.',
+            ], 400);
+        }
+
+        $creator->delete();
+
+        return response()->json([
+            'message' => 'Creator deleted successfully',
+        ]);
+    }
+}

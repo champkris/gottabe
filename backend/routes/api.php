@@ -10,7 +10,9 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\MerchantController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminMerchantController;
+use App\Http\Controllers\Admin\AdminCreatorController;
 use App\Http\Controllers\Admin\AdminOrderController;
+use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Merchant\MerchantDashboardController;
 use App\Http\Controllers\Merchant\MerchantProductController;
 use App\Http\Controllers\Merchant\MerchantOrderController;
@@ -64,7 +66,29 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/reviews/{review}', [ReviewController::class, 'destroy']);
     });
 
-    // Merchant routes
+    // Creator routes
+    Route::middleware(['check.role:creator'])->prefix('creator')->name('api.creator.')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [MerchantDashboardController::class, 'index']);
+        Route::get('/profile', [MerchantDashboardController::class, 'profile'])->name('profile');
+        Route::get('/status', [MerchantDashboardController::class, 'status'])->name('status');
+        Route::put('/profile', [MerchantDashboardController::class, 'updateProfile']);
+
+        // Products
+        Route::get('/products', [MerchantProductController::class, 'index']);
+        Route::get('/products/{product}', [MerchantProductController::class, 'show']);
+        Route::post('/products', [MerchantProductController::class, 'store']);
+        Route::put('/products/{product}', [MerchantProductController::class, 'update']);
+        Route::delete('/products/{product}', [MerchantProductController::class, 'destroy']);
+        Route::put('/products/{product}/toggle-status', [MerchantProductController::class, 'toggleStatus']);
+
+        // Analytics
+        Route::get('/analytics', [MerchantDashboardController::class, 'analytics']);
+        Route::get('/analytics/sales', [MerchantDashboardController::class, 'salesAnalytics']);
+        Route::get('/analytics/products', [MerchantDashboardController::class, 'productAnalytics']);
+    });
+
+    // Merchant routes (legacy, kept for backward compatibility)
     Route::middleware(['check.role:merchant'])->prefix('merchant')->name('api.merchant.')->group(function () {
         // Dashboard
         Route::get('/dashboard', [MerchantDashboardController::class, 'index']);
@@ -98,7 +122,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index']);
         Route::get('/analytics', [AdminDashboardController::class, 'analytics']);
 
-        // Merchants management
+        // Creators management
+        Route::get('/creators', [AdminCreatorController::class, 'index']);
+        Route::get('/creators/{creator}', [AdminCreatorController::class, 'show']);
+        Route::put('/creators/{creator}/approve', [AdminCreatorController::class, 'approve']);
+        Route::put('/creators/{creator}/reject', [AdminCreatorController::class, 'reject']);
+        Route::put('/creators/{creator}/commission', [AdminCreatorController::class, 'updateCommission']);
+        Route::delete('/creators/{creator}', [AdminCreatorController::class, 'destroy']);
+
+        // Merchants management (legacy, kept for backward compatibility)
         Route::get('/merchants', [AdminMerchantController::class, 'index']);
         Route::get('/merchants/{merchant}', [AdminMerchantController::class, 'show']);
         Route::put('/merchants/{merchant}/approve', [AdminMerchantController::class, 'approve']);
@@ -108,11 +140,17 @@ Route::middleware('auth:sanctum')->group(function () {
         // Orders management
         Route::get('/orders', [AdminOrderController::class, 'index']);
         Route::get('/orders/{order}', [AdminOrderController::class, 'show']);
+        Route::put('/orders/{order}/status', [AdminOrderController::class, 'updateStatus']);
+        Route::post('/orders/{order}/cancel', [AdminOrderController::class, 'cancel']);
+        Route::get('/orders/statistics', [AdminOrderController::class, 'statistics']);
 
         // Categories management
-        Route::post('/categories', [CategoryController::class, 'store']);
-        Route::put('/categories/{category}', [CategoryController::class, 'update']);
-        Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
+        Route::get('/categories', [AdminCategoryController::class, 'index']);
+        Route::get('/categories/{category}', [AdminCategoryController::class, 'show']);
+        Route::post('/categories', [AdminCategoryController::class, 'store']);
+        Route::put('/categories/{category}', [AdminCategoryController::class, 'update']);
+        Route::delete('/categories/{category}', [AdminCategoryController::class, 'destroy']);
+        Route::post('/categories/{category}/toggle', [AdminCategoryController::class, 'toggleStatus']);
 
         // Platform settings
         Route::get('/settings', [AdminDashboardController::class, 'settings']);

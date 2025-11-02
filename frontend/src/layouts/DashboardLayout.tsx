@@ -10,23 +10,23 @@ export default function DashboardLayout() {
     navigate('/auth/login')
   }
 
-  const merchantLinks = [
-    { to: '/merchant', label: 'Dashboard' },
-    { to: '/merchant/products', label: 'Products' },
-    { to: '/merchant/orders', label: 'Orders' },
-    { to: '/merchant/analytics', label: 'Analytics' },
-    { to: '/merchant/settings', label: 'Settings' },
+  const creatorLinks = [
+    { to: '/creator', label: 'Dashboard' },
+    { to: '/creator/products', label: 'Products' },
+    { to: '/creator/analytics', label: 'Analytics' },
+    { to: '/creator/settings', label: 'Settings' },
   ]
 
   const adminLinks = [
     { to: '/admin', label: 'Dashboard' },
-    { to: '/admin/merchants', label: 'Merchants' },
+    { to: '/admin/creators', label: 'Creators' },
+    { to: '/admin/merchants', label: 'Merchants (Legacy)' },
     { to: '/admin/orders', label: 'Orders' },
     { to: '/admin/categories', label: 'Categories' },
     { to: '/admin/settings', label: 'Settings' },
   ]
 
-  const links = user?.role === 'admin' ? adminLinks : merchantLinks
+  const links = user?.role === 'admin' ? adminLinks : creatorLinks
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -35,7 +35,7 @@ export default function DashboardLayout() {
         <aside className="w-64 bg-white shadow-md">
           <div className="p-4 border-b">
             <h2 className="text-xl font-bold text-gray-800">
-              {user?.role === 'admin' ? 'Admin Panel' : 'Merchant Dashboard'}
+              {user?.role === 'admin' ? 'Admin Panel' : 'Creator Dashboard'}
             </h2>
             <p className="text-sm text-gray-600">{user?.name}</p>
           </div>

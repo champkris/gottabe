@@ -211,7 +211,7 @@ export default function Login() {
             <p className="text-sm font-medium text-blue-900 mb-2">Demo Credentials:</p>
             <div className="space-y-1 text-sm text-blue-800">
               <p>Customer: customer@demo.com / password</p>
-              <p>Merchant: merchant@demo.com / password</p>
+              <p>Creator: creator@demo.com / password</p>
               <p>Admin: admin@demo.com / password</p>
             </div>
           </CardContent>

@@ -52,7 +52,7 @@ export default function Products() {
   const fetchProducts = async () => {
     try {
       setLoading(true)
-      const response = await api.get('/merchant/products')
+      const response = await api.get('/creator/products')
       setProducts(response.data.data || response.data)
     } catch (error: any) {
       console.error('Failed to fetch products:', error)
@@ -64,7 +64,7 @@ export default function Products() {
 
   const handleToggleStatus = async (productId: number, currentStatus: boolean) => {
     try {
-      await api.put(`/merchant/products/${productId}`, {
+      await api.put(`/creator/products/${productId}`, {
         is_active: !currentStatus,
       })
       toast.success(`Product ${!currentStatus ? 'activated' : 'deactivated'} successfully`)
@@ -81,7 +81,7 @@ export default function Products() {
     }
 
     try {
-      await api.delete(`/merchant/products/${productId}`)
+      await api.delete(`/creator/products/${productId}`)
       toast.success('Product deleted successfully')
       fetchProducts()
       setShowMenu(null)
@@ -129,7 +129,7 @@ export default function Products() {
           <h1 className="text-3xl font-bold mb-2">My Products</h1>
           <p className="text-gray-600">Manage your product listings</p>
         </div>
-        <Link to="/merchant/products/new">
+        <Link to="/creator/products/new">
           <Button>
             <Plus className="h-4 w-4 mr-2" />
             Add Product
@@ -237,7 +237,7 @@ export default function Products() {
                 : 'Start by adding your first product'}
             </p>
             {!searchQuery && filter === 'all' && (
-              <Link to="/merchant/products/new">
+              <Link to="/creator/products/new">
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Product
@@ -302,7 +302,7 @@ export default function Products() {
                         {showMenu === product.id && (
                           <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-10">
                             <Link
-                              to={`/merchant/products/${product.id}/edit`}
+                              to={`/creator/products/${product.id}/edit`}
                               className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-50 rounded-t-lg"
                               onClick={() => setShowMenu(null)}
                             >

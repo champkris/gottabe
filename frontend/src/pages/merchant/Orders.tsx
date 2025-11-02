@@ -92,7 +92,7 @@ export default function Orders() {
   const fetchOrders = async () => {
     try {
       setLoading(true)
-      const response = await api.get('/merchant/orders')
+      const response = await api.get('/creator/orders')
       setOrders(response.data.data || response.data)
     } catch (error: any) {
       console.error('Failed to fetch orders:', error)
@@ -105,7 +105,7 @@ export default function Orders() {
   const handleStatusUpdate = async (orderId: number, newStatus: string) => {
     try {
       setUpdatingStatus(orderId)
-      await api.put(`/merchant/orders/${orderId}/status`, {
+      await api.put(`/creator/orders/${orderId}/status`, {
         status: newStatus,
       })
       toast.success('Order status updated successfully')
@@ -308,7 +308,7 @@ export default function Orders() {
                         ))}
                       </select>
                     )}
-                    <Link to={`/merchant/orders/${order.id}`}>
+                    <Link to={`/creator/orders/${order.id}`}>
                       <Button variant="outline" size="sm">
                         View Details
                         <ChevronRight className="ml-1 h-4 w-4" />

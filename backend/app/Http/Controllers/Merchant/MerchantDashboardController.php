@@ -10,102 +10,116 @@ use Illuminate\Support\Facades\DB;
 class MerchantDashboardController extends Controller
 {
     /**
-     * Get merchant dashboard data.
+     * Get creator/merchant dashboard data.
      */
     public function index(Request $request): JsonResponse
     {
-        $merchant = $request->user()->merchant;
+        $creator = $request->user()->creator ?? $request->user()->merchant;
 
-        if (!$merchant) {
-            return response()->json(['message' => 'Merchant profile not found'], 404);
+        if (!$creator) {
+            return response()->json(['message' => 'Creator profile not found'], 404);
         }
 
-        // Get current month stats
+        // Calculate total sales from products
+        $totalSales = DB::table('order_items')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->where('products.merchant_id', $creator->id)
+            ->where('orders.status', '!=', 'cancelled')
+            ->sum('order_items.subtotal');
+
+        // Calculate commission earned
+        $commissionEarned = $totalSales * ($creator->commission_rate / 100);
+
+        // Get current month sales
         $currentMonth = now()->startOfMonth();
         $lastMonth = now()->subMonth()->startOfMonth();
 
-        // Revenue stats
-        $currentMonthRevenue = $merchant->orders()
-            ->where('status', 'delivered')
-            ->where('created_at', '>=', $currentMonth)
-            ->sum('merchant_payout');
+        $currentMonthSales = DB::table('order_items')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->where('products.merchant_id', $creator->id)
+            ->where('orders.status', '!=', 'cancelled')
+            ->where('orders.created_at', '>=', $currentMonth)
+            ->sum('order_items.subtotal');
 
-        $lastMonthRevenue = $merchant->orders()
-            ->where('status', 'delivered')
-            ->whereBetween('created_at', [$lastMonth, $currentMonth])
-            ->sum('merchant_payout');
+        $lastMonthSales = DB::table('order_items')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->where('products.merchant_id', $creator->id)
+            ->where('orders.status', '!=', 'cancelled')
+            ->whereBetween('orders.created_at', [$lastMonth, $currentMonth])
+            ->sum('order_items.subtotal');
 
-        $revenueGrowth = $lastMonthRevenue > 0
-            ? (($currentMonthRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100
+        $salesGrowth = $lastMonthSales > 0
+            ? (($currentMonthSales - $lastMonthSales) / $lastMonthSales) * 100
             : 0;
 
-        // Order stats
-        $pendingOrders = $merchant->orders()->where('status', 'pending')->count();
-        $processingOrders = $merchant->orders()->where('status', 'processing')->count();
-        $totalOrders = $merchant->orders()->count();
+        // Total orders count
+        $totalOrders = DB::table('order_items')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->where('products.merchant_id', $creator->id)
+            ->where('orders.status', '!=', 'cancelled')
+            ->distinct('orders.id')
+            ->count('orders.id');
 
         // Product stats
-        $activeProducts = $merchant->products()->where('is_active', true)->count();
-        $lowStockProducts = $merchant->products()
-            ->where('is_active', true)
-            ->whereColumn('stock', '<=', 'min_stock')
-            ->count();
-        $outOfStockProducts = $merchant->products()
-            ->where('is_active', true)
-            ->where('stock', 0)
-            ->count();
-
-        // Recent orders
-        $recentOrders = $merchant->orders()
-            ->with(['user', 'items'])
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
+        $totalProducts = $creator->products()->count();
+        $activeProducts = $creator->products()->where('is_active', true)->count();
 
         // Best selling products
-        $bestSellingProducts = $merchant->products()
-            ->select('id', 'name', 'price', 'total_sales', 'stock')
-            ->orderBy('total_sales', 'desc')
+        $bestSellingProducts = $creator->products()
+            ->withCount(['orderItems as units_sold' => function ($query) {
+                $query->join('orders', 'order_items.order_id', '=', 'orders.id')
+                    ->where('orders.status', '!=', 'cancelled');
+            }])
+            ->with('category')
+            ->orderBy('units_sold', 'desc')
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(function ($product) use ($creator) {
+                $revenue = DB::table('order_items')
+                    ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                    ->where('order_items.product_id', $product->id)
+                    ->where('orders.status', '!=', 'cancelled')
+                    ->sum('order_items.subtotal');
 
-        // Sales chart data (last 7 days)
-        $salesData = $merchant->orders()
-            ->where('status', 'delivered')
-            ->where('created_at', '>=', now()->subDays(7))
+                $product->revenue = $revenue;
+                $product->commission = $revenue * ($creator->commission_rate / 100);
+                return $product;
+            });
+
+        // Sales chart data (last 30 days)
+        $salesData = DB::table('order_items')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->where('products.merchant_id', $creator->id)
+            ->where('orders.status', '!=', 'cancelled')
+            ->where('orders.created_at', '>=', now()->subDays(30))
             ->select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(merchant_payout) as revenue'),
-                DB::raw('COUNT(*) as orders')
+                DB::raw('DATE(orders.created_at) as date'),
+                DB::raw('SUM(order_items.subtotal) as sales'),
+                DB::raw('COUNT(DISTINCT orders.id) as orders')
             )
             ->groupBy('date')
             ->orderBy('date')
             ->get();
 
         return response()->json([
-            'stats' => [
-                'revenue' => [
-                    'current_month' => $currentMonthRevenue,
-                    'last_month' => $lastMonthRevenue,
-                    'growth' => round($revenueGrowth, 2),
-                ],
-                'orders' => [
-                    'pending' => $pendingOrders,
-                    'processing' => $processingOrders,
-                    'total' => $totalOrders,
-                ],
-                'products' => [
-                    'active' => $activeProducts,
-                    'low_stock' => $lowStockProducts,
-                    'out_of_stock' => $outOfStockProducts,
-                ],
-                'rating' => $merchant->rating,
-                'total_reviews' => $merchant->total_reviews,
-            ],
-            'recent_orders' => $recentOrders,
+            'total_sales' => $totalSales,
+            'commission_rate' => $creator->commission_rate,
+            'commission_earned' => $commissionEarned,
+            'total_revenue' => $totalSales,
+            'total_orders' => $totalOrders,
+            'total_products' => $totalProducts,
+            'active_products' => $activeProducts,
+            'current_month_sales' => $currentMonthSales,
+            'last_month_sales' => $lastMonthSales,
+            'sales_growth' => round($salesGrowth, 2),
             'best_selling_products' => $bestSellingProducts,
             'sales_chart' => $salesData,
-            'merchant' => $merchant,
+            'creator' => $creator,
         ]);
     }
 
