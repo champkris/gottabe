@@ -287,7 +287,7 @@ export default function ProductForm() {
                   {/* Regular Price */}
                   <div className="space-y-2">
                     <label htmlFor="price" className="text-sm font-medium">
-                      Regular Price ($) *
+                      Regular Price (THB) *
                     </label>
                     <Input
                       id="price"
@@ -313,7 +313,7 @@ export default function ProductForm() {
                   {/* Sale Price */}
                   <div className="space-y-2">
                     <label htmlFor="sale_price" className="text-sm font-medium">
-                      Sale Price ($)
+                      Sale Price (THB)
                       <span className="text-gray-500 text-xs ml-1">(optional)</span>
                     </label>
                     <Input
