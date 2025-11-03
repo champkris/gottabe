@@ -13,6 +13,7 @@ import Register from '@/pages/auth/Register'
 // Public Pages
 import Home from '@/pages/Home'
 import Shop from '@/pages/Shop'
+import Categories from '@/pages/Categories'
 import ProductDetail from '@/pages/ProductDetail'
 import MerchantStore from '@/pages/MerchantStore'
 
@@ -70,6 +71,7 @@ function App() {
       <Route path="/" element={<PublicLayout />}>
         <Route index element={<Home />} />
         <Route path="shop" element={<Shop />} />
+        <Route path="categories" element={<Categories />} />
         <Route path="product/:slug" element={<ProductDetail />} />
         <Route path="store/:slug" element={<MerchantStore />} />
       </Route>
