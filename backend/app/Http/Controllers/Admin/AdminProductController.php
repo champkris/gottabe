@@ -84,6 +84,10 @@ class AdminProductController extends Controller
             'category_id' => 'sometimes|exists:categories,id',
             'is_active' => 'sometimes|boolean',
             'is_featured' => 'sometimes|boolean',
+            'images' => 'sometimes|array',
+            'images.*' => 'string', // Accept both URLs and local paths
+            'available_from' => 'nullable|date',
+            'available_to' => 'nullable|date|after_or_equal:available_from',
         ]);
 
         $product->update($validated);

@@ -34,6 +34,8 @@ class Product extends Model
         'is_featured',
         'is_digital',
         'is_active',
+        'available_from',
+        'available_to',
         'rating',
         'total_reviews',
         'total_sales',
@@ -53,6 +55,8 @@ class Product extends Model
         'cost' => 'decimal:2',
         'weight' => 'decimal:2',
         'rating' => 'decimal:2',
+        'available_from' => 'datetime',
+        'available_to' => 'datetime',
     ];
 
     protected static function boot()
@@ -164,6 +168,33 @@ class Product extends Model
     }
 
     /**
+     * Check if product is currently available based on date range.
+     */
+    public function getIsAvailableAttribute(): bool
+    {
+        $now = now();
+
+        // If no dates are set, product is always available
+        if (!$this->available_from && !$this->available_to) {
+            return true;
+        }
+
+        // If only available_from is set
+        if ($this->available_from && !$this->available_to) {
+            return $now->greaterThanOrEqualTo($this->available_from);
+        }
+
+        // If only available_to is set
+        if (!$this->available_from && $this->available_to) {
+            return $now->lessThanOrEqualTo($this->available_to);
+        }
+
+        // If both dates are set
+        return $now->greaterThanOrEqualTo($this->available_from) &&
+               $now->lessThanOrEqualTo($this->available_to);
+    }
+
+    /**
      * Scope for active products.
      */
     public function scopeActive($query)
@@ -185,6 +216,37 @@ class Product extends Model
     public function scopeInStock($query)
     {
         return $query->where('stock', '>', 0);
+    }
+
+    /**
+     * Scope for available products based on date range.
+     */
+    public function scopeAvailable($query)
+    {
+        $now = now();
+        return $query->where(function ($q) use ($now) {
+            $q->where(function ($query) use ($now) {
+                // Both dates are set
+                $query->whereNotNull('available_from')
+                      ->whereNotNull('available_to')
+                      ->where('available_from', '<=', $now)
+                      ->where('available_to', '>=', $now);
+            })->orWhere(function ($query) use ($now) {
+                // Only available_from is set
+                $query->whereNotNull('available_from')
+                      ->whereNull('available_to')
+                      ->where('available_from', '<=', $now);
+            })->orWhere(function ($query) use ($now) {
+                // Only available_to is set
+                $query->whereNull('available_from')
+                      ->whereNotNull('available_to')
+                      ->where('available_to', '>=', $now);
+            })->orWhere(function ($query) {
+                // Neither date is set (always available)
+                $query->whereNull('available_from')
+                      ->whereNull('available_to');
+            });
+        });
     }
 
     /**

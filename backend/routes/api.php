@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\MerchantController;
+use App\Http\Controllers\ImageController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminMerchantController;
 use App\Http\Controllers\Admin\AdminCreatorController;
@@ -52,6 +53,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/refresh', [AuthController::class, 'refresh']);
         Route::put('/profile', [AuthController::class, 'updateProfile']);
     });
+
+    // Image upload routes (available to authenticated users)
+    Route::post('/images/upload', [ImageController::class, 'upload']);
+    Route::post('/images/delete', [ImageController::class, 'delete']);
 
     // Customer routes
     Route::middleware(['auth:sanctum'])->group(function () {

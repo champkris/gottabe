@@ -95,6 +95,8 @@ class MerchantProductController extends Controller
             'is_featured' => 'boolean',
             'is_digital' => 'boolean',
             'is_active' => 'boolean',
+            'available_from' => 'nullable|date',
+            'available_to' => 'nullable|date|after_or_equal:available_from',
         ]);
 
         $validated['merchant_id'] = $merchant->id;
@@ -158,6 +160,8 @@ class MerchantProductController extends Controller
             'is_featured' => 'sometimes|boolean',
             'is_digital' => 'sometimes|boolean',
             'is_active' => 'sometimes|boolean',
+            'available_from' => 'nullable|date',
+            'available_to' => 'nullable|date|after_or_equal:available_from',
         ]);
 
         // Validate sale price is less than regular price
