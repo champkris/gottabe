@@ -4,6 +4,7 @@ import { Star, ShoppingCart, Heart, Minus, Plus, Truck, Shield, RotateCcw, Store
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import ProductCard from '@/components/ProductCard'
+import AvailabilityCountdown from '@/components/AvailabilityCountdown'
 import { useCartStore } from '@/stores/cartStore'
 import { cn, formatCurrency, calculateDiscount } from '@/lib/utils'
 import api from '@/lib/axios'
@@ -22,6 +23,8 @@ interface Product {
   rating: number
   total_reviews: number
   is_featured: boolean
+  available_from?: string | null
+  available_to?: string | null
   merchant: {
     id: number
     business_name: string
@@ -247,6 +250,15 @@ export default function ProductDetail() {
                 {formatCurrency(product.price)}
               </span>
             )}
+          </div>
+
+          {/* Availability Countdown */}
+          <div className="mb-6">
+            <AvailabilityCountdown
+              availableFrom={product.available_from || null}
+              availableTo={product.available_to || null}
+              compact={false}
+            />
           </div>
 
           <p className="text-gray-700 mb-6 leading-relaxed">

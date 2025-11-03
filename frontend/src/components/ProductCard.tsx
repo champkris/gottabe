@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/stores/cartStore'
 import { cn, formatCurrency, calculateDiscount } from '@/lib/utils'
 import toast from 'react-hot-toast'
+import AvailabilityCountdown from './AvailabilityCountdown'
 
 interface Product {
   id: number
@@ -17,6 +18,8 @@ interface Product {
   stock: number
   rating: number
   total_reviews: number
+  available_from?: string | null
+  available_to?: string | null
   merchant: {
     id: number
     business_name: string
@@ -128,6 +131,13 @@ export default function ProductCard({ product, viewMode = 'grid' }: ProductCardP
                       {product.rating.toFixed(1)} ({product.total_reviews} reviews)
                     </span>
                   </div>
+
+                  {/* Availability Countdown */}
+                  <AvailabilityCountdown
+                    availableFrom={product.available_from || null}
+                    availableTo={product.available_to || null}
+                    compact={true}
+                  />
                 </div>
 
                 {/* Price & Actions */}
@@ -270,6 +280,15 @@ export default function ProductCard({ product, viewMode = 'grid' }: ProductCardP
             <span className="text-xs text-gray-600">
               ({product.total_reviews})
             </span>
+          </div>
+
+          {/* Availability Countdown */}
+          <div className="mb-3">
+            <AvailabilityCountdown
+              availableFrom={product.available_from || null}
+              availableTo={product.available_to || null}
+              compact={true}
+            />
           </div>
 
           {/* Price */}
