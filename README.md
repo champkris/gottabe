@@ -1,4 +1,4 @@
-# Laravel + React Multi-Merchant Marketplace
+# Gottabe - Laravel + React Multi-Merchant Platform
 
 A modern multi-merchant ecommerce platform built with Laravel (backend) and React + Vite (frontend).
 
@@ -66,7 +66,7 @@ php artisan key:generate
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=marketplace
+DB_DATABASE=gottabe
 DB_USERNAME=root
 DB_PASSWORD=
 ```

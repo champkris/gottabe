@@ -38,10 +38,10 @@ class QuickDemoSeeder extends Seeder
         // Create creator profile
         $creator = Merchant::create([
             'user_id' => $creatorUser->id,
-            'business_name' => 'ToBeAwesome Studio',
-            'slug' => 'tobeawesome-studio',
+            'business_name' => 'Gottabe Studio',
+            'slug' => 'gottabe-studio',
             'business_description' => 'Premium designs and collections for awesome people',
-            'business_email' => 'studio@tobeawesome.com',
+            'business_email' => 'studio@gottabe.com',
             'business_phone' => '555-0123',
             'business_address' => '123 Awesome Street, Bangkok',
             'commission_rate' => 30,

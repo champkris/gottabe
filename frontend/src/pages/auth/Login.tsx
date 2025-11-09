@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { Eye, EyeOff, Mail, Lock, Package } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -47,8 +47,11 @@ export default function Login() {
         {/* Logo */}
         <div className="text-center">
           <Link to="/" className="inline-flex items-center justify-center gap-2">
-            <Package className="h-12 w-12 text-primary" />
-            <span className="text-3xl font-bold">Marketplace</span>
+            <img
+              src="/images/gottabe_logo.png"
+              alt="Gottabe"
+              className="h-12 w-auto"
+            />
           </Link>
           <p className="mt-2 text-gray-600">Welcome back! Please login to continue.</p>
         </div>

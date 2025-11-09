@@ -34,6 +34,11 @@ export default function DashboardLayout() {
         {/* Sidebar */}
         <aside className="w-64 bg-white shadow-md">
           <div className="p-4 border-b">
+            <img
+              src="/images/gottabe_logo.png"
+              alt="Gottabe"
+              className="h-8 w-auto mb-2"
+            />
             <h2 className="text-xl font-bold text-gray-800">
               {user?.role === 'admin' ? 'Admin Panel' : 'Creator Dashboard'}
             </h2>

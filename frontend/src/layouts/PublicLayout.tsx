@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom'
-import { ShoppingCart, User, Menu, Search, Heart, Package } from 'lucide-react'
+import { ShoppingCart, User, Menu, Search, Heart } from 'lucide-react'
 import { useState } from 'react'
 import { useAuthStore } from '@/stores/authStore'
 import { useCartStore } from '@/stores/cartStore'
@@ -38,8 +38,11 @@ export default function PublicLayout() {
             <div className="flex items-center gap-8">
               {/* Logo */}
               <Link to="/" className="flex items-center gap-2">
-                <Package className="h-8 w-8 text-primary" />
-                <span className="text-2xl font-bold">Marketplace</span>
+                <img
+                  src="/images/gottabe_logo.png"
+                  alt="Gottabe"
+                  className="h-8 w-auto"
+                />
               </Link>
 
               {/* Desktop Navigation */}
@@ -240,7 +243,7 @@ export default function PublicLayout() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* About */}
             <div>
-              <h3 className="text-lg font-semibold mb-4">About Marketplace</h3>
+              <h3 className="text-lg font-semibold mb-4">About Gottabe</h3>
               <p className="text-gray-400 text-sm">
                 Your trusted multi-merchant platform for quality products from verified sellers.
               </p>
@@ -261,7 +264,7 @@ export default function PublicLayout() {
             <div>
               <h3 className="text-lg font-semibold mb-4">For Merchants</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to="/auth/register" className="hover:text-white transition">Sell on Marketplace</Link></li>
+                <li><Link to="/auth/register" className="hover:text-white transition">Sell on Gottabe</Link></li>
                 <li><Link to="/merchant/guide" className="hover:text-white transition">Merchant Guide</Link></li>
                 <li><Link to="/merchant/fees" className="hover:text-white transition">Fees & Pricing</Link></li>
                 <li><Link to="/merchant/support" className="hover:text-white transition">Merchant Support</Link></li>
@@ -288,7 +291,7 @@ export default function PublicLayout() {
           <hr className="border-gray-800 my-8" />
 
           <div className="text-center text-sm text-gray-400">
-            <p>&copy; 2024 Marketplace. All rights reserved.</p>
+            <p>&copy; 2024 Gottabe. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -14,7 +14,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
               <h1 className="text-5xl font-bold mb-4">
-                Welcome to ToBeAwesome Marketplace
+                Welcome to Gottabe Marketplace
               </h1>
               <p className="text-xl mb-8 opacity-90">
                 Discover amazing products from trusted merchants. Shop with confidence and enjoy great deals every day.
@@ -27,7 +27,7 @@ export default function Home() {
                   </Button>
                 </Link>
                 <Link to="/auth/register">
-                  <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/10">
+                  <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 border-2 border-white/20 shadow-lg">
                     Become a Merchant
                   </Button>
                 </Link>
@@ -92,7 +92,7 @@ export default function Home() {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Choose ToBeAwesome?</h2>
+            <h2 className="text-3xl font-bold mb-4">Why Choose Gottabe?</h2>
             <p className="text-gray-600">We provide the best shopping experience</p>
           </div>
 
@@ -163,7 +163,7 @@ export default function Home() {
           </div>
 
           <Link to="/auth/register">
-            <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100">
+            <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 shadow-lg">
               Become a Merchant
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>

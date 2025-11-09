@@ -58,13 +58,13 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
         ]);
 
-        // Create Creator 1 - ToBeAwesome Studio (30% commission)
+        // Create Creator 1 - Gottabe Studio (30% commission)
         $creator1 = Merchant::create([
             'user_id' => $creator1User->id,
-            'business_name' => 'ToBeAwesome Studio',
-            'slug' => 'tobeawesome-studio',
+            'business_name' => 'Gottabe Studio',
+            'slug' => 'gottabe-studio',
             'business_description' => 'Premium designs and collections for awesome people',
-            'business_email' => 'studio@tobeawesome.com',
+            'business_email' => 'studio@gottabe.com',
             'business_phone' => '555-123-4567',
             'business_address' => '789 Creative Plaza, Bangkok',
             'commission_rate' => 30.00,

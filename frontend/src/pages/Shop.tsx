@@ -21,8 +21,8 @@ const mockProducts = [
     total_reviews: 125,
     merchant: {
       id: 1,
-      business_name: 'ToBeAwesome Store',
-      slug: 'tobeawesome-store'
+      business_name: 'Gottabe Store',
+      slug: 'gottabe-store'
     },
     category: {
       id: 1,
@@ -43,8 +43,8 @@ const mockProducts = [
     total_reviews: 89,
     merchant: {
       id: 1,
-      business_name: 'ToBeAwesome Store',
-      slug: 'tobeawesome-store'
+      business_name: 'Gottabe Store',
+      slug: 'gottabe-store'
     },
     category: {
       id: 1,
@@ -64,8 +64,8 @@ const mockProducts = [
     total_reviews: 67,
     merchant: {
       id: 1,
-      business_name: 'ToBeAwesome Store',
-      slug: 'tobeawesome-store'
+      business_name: 'Gottabe Store',
+      slug: 'gottabe-store'
     },
     category: {
       id: 2,
@@ -86,8 +86,8 @@ const mockProducts = [
     total_reviews: 45,
     merchant: {
       id: 1,
-      business_name: 'ToBeAwesome Store',
-      slug: 'tobeawesome-store'
+      business_name: 'Gottabe Store',
+      slug: 'gottabe-store'
     },
     category: {
       id: 2,
@@ -107,8 +107,8 @@ const mockProducts = [
     total_reviews: 28,
     merchant: {
       id: 1,
-      business_name: 'ToBeAwesome Store',
-      slug: 'tobeawesome-store'
+      business_name: 'Gottabe Store',
+      slug: 'gottabe-store'
     },
     category: {
       id: 3,
@@ -129,8 +129,8 @@ const mockProducts = [
     total_reviews: 156,
     merchant: {
       id: 1,
-      business_name: 'ToBeAwesome Store',
-      slug: 'tobeawesome-store'
+      business_name: 'Gottabe Store',
+      slug: 'gottabe-store'
     },
     category: {
       id: 1,
