@@ -77,7 +77,7 @@ class AdminCreatorController extends Controller
             'business_email' => 'required|email',
             'business_phone' => 'nullable|string|max:20',
             'business_address' => 'nullable|string',
-            'commission_rate' => 'required|numeric|min:0|max:100',
+            'commission_amount' => 'required|numeric|min:0',
         ]);
 
         DB::beginTransaction();
@@ -101,7 +101,7 @@ class AdminCreatorController extends Controller
                 'business_email' => $validated['business_email'],
                 'business_phone' => $validated['business_phone'] ?? null,
                 'business_address' => $validated['business_address'] ?? null,
-                'commission_rate' => $validated['commission_rate'],
+                'commission_amount' => $validated['commission_amount'],
                 'is_approved' => true,
                 'approved_at' => now(),
             ]);
@@ -141,27 +141,27 @@ class AdminCreatorController extends Controller
             ->distinct('order_items.order_id')
             ->count('order_items.order_id');
 
-        // Calculate commission earned
-        $creator->commission_earned = $creator->total_sales * ($creator->commission_rate / 100);
+        // Calculate commission earned (fixed amount per order * number of orders)
+        $creator->commission_earned = $creator->commission_amount * $creator->total_orders;
 
         return response()->json($creator);
     }
 
     /**
-     * Update creator commission rate
+     * Update creator commission amount
      */
     public function updateCommission(Request $request, $id)
     {
         $request->validate([
-            'commission_rate' => 'required|numeric|min:0|max:100',
+            'commission_amount' => 'required|numeric|min:0',
         ]);
 
         $creator = Merchant::findOrFail($id);
-        $creator->commission_rate = $request->commission_rate;
+        $creator->commission_amount = $request->commission_amount;
         $creator->save();
 
         return response()->json([
-            'message' => 'Commission rate updated successfully',
+            'message' => 'Commission amount updated successfully',
             'creator' => $creator,
         ]);
     }

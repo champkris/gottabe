@@ -135,9 +135,8 @@ class OrderController extends Controller
                 $tax = ($validated['tax'] / $totalItemCount) * $merchantItemCount;
                 $total = $subtotal + $shipping + $tax;
 
-                // Calculate commission
-                $commissionRate = $merchant->commission_rate;
-                $commissionAmount = $total * ($commissionRate / 100);
+                // Calculate commission (fixed THB amount per order)
+                $commissionAmount = $merchant->commission_amount;
                 $merchantPayout = $total - $commissionAmount;
 
                 // Convert shipping address array to JSON string
@@ -152,7 +151,7 @@ class OrderController extends Controller
                     'tax' => $tax,
                     'shipping' => $shipping,
                     'total' => $total,
-                    'commission_rate' => $commissionRate,
+                    'commission_amount_per_order' => $commissionAmount,
                     'commission_amount' => $commissionAmount,
                     'merchant_payout' => $merchantPayout,
                     'payment_method' => $validated['payment_method'],
