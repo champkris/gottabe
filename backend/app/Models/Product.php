@@ -15,6 +15,9 @@ class Product extends Model
     protected $fillable = [
         'merchant_id',
         'category_id',
+        'merchandise_type_id',
+        'artwork_id',
+        'placement_option_id',
         'name',
         'slug',
         'description',
@@ -26,7 +29,10 @@ class Product extends Model
         'barcode',
         'stock',
         'min_stock',
+        'size',
+        'color',
         'images',
+        'mockup_image',
         'attributes',
         'tags',
         'weight',
@@ -97,6 +103,30 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Get the merchandise type of the product.
+     */
+    public function merchandiseType(): BelongsTo
+    {
+        return $this->belongsTo(MerchandiseType::class);
+    }
+
+    /**
+     * Get the artwork used in the product.
+     */
+    public function artwork(): BelongsTo
+    {
+        return $this->belongsTo(Artwork::class);
+    }
+
+    /**
+     * Get the placement option of the product.
+     */
+    public function placementOption(): BelongsTo
+    {
+        return $this->belongsTo(PlacementOption::class);
     }
 
     /**

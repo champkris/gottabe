@@ -15,6 +15,8 @@ use App\Http\Controllers\Admin\AdminCreatorController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminProductController;
+use App\Http\Controllers\Admin\AdminMerchandiseController;
+use App\Http\Controllers\Admin\AdminPlacementController;
 use App\Http\Controllers\Merchant\MerchantDashboardController;
 use App\Http\Controllers\Merchant\MerchantProductController;
 use App\Http\Controllers\Merchant\MerchantOrderController;
@@ -167,6 +169,23 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/products/{product}/toggle-status', [AdminProductController::class, 'toggleStatus']);
         Route::post('/products/{product}/toggle-featured', [AdminProductController::class, 'toggleFeatured']);
         Route::post('/products/bulk-update', [AdminProductController::class, 'bulkUpdate']);
+
+        // Merchandise Types management
+        Route::get('/merchandise', [AdminMerchandiseController::class, 'index']);
+        Route::post('/merchandise', [AdminMerchandiseController::class, 'store']);
+        Route::get('/merchandise/{merchandise}', [AdminMerchandiseController::class, 'show']);
+        Route::put('/merchandise/{merchandise}', [AdminMerchandiseController::class, 'update']);
+        Route::delete('/merchandise/{merchandise}', [AdminMerchandiseController::class, 'destroy']);
+        Route::post('/merchandise/{merchandise}/placements', [AdminMerchandiseController::class, 'attachPlacement']);
+        Route::delete('/merchandise/{merchandise}/placements/{placement}', [AdminMerchandiseController::class, 'detachPlacement']);
+        Route::put('/merchandise/{merchandise}/placements/{placement}/price', [AdminMerchandiseController::class, 'updatePlacementPrice']);
+
+        // Placement Options management
+        Route::get('/placements', [AdminPlacementController::class, 'index']);
+        Route::post('/placements', [AdminPlacementController::class, 'store']);
+        Route::get('/placements/{placement}', [AdminPlacementController::class, 'show']);
+        Route::put('/placements/{placement}', [AdminPlacementController::class, 'update']);
+        Route::delete('/placements/{placement}', [AdminPlacementController::class, 'destroy']);
 
         // Platform settings
         Route::get('/settings', [AdminDashboardController::class, 'settings']);

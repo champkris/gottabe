@@ -248,6 +248,9 @@ class DatabaseSeeder extends Seeder
             Product::create($productData);
         }
 
+        // Seed Merchandise Types and Placement Options
+        $this->call(MerchandiseSeeder::class);
+
         echo "\n✅ Database seeded successfully!\n";
         echo "📧 Demo accounts:\n";
         echo "   Customer: customer@demo.com / password\n";

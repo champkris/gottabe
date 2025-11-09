@@ -40,6 +40,8 @@ import AdminProducts from '@/pages/admin/Products'
 import AdminOrders from '@/pages/admin/Orders'
 import AdminCategories from '@/pages/admin/Categories'
 import AdminSettings from '@/pages/admin/Settings'
+import AdminMerchandise from '@/pages/admin/Merchandise'
+import AdminPlacements from '@/pages/admin/Placements'
 
 // Protected Route Component
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?: string[] }) => {
@@ -124,6 +126,8 @@ function App() {
         <Route path="products" element={<AdminProducts />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="categories" element={<AdminCategories />} />
+        <Route path="merchandise" element={<AdminMerchandise />} />
+        <Route path="placements" element={<AdminPlacements />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>
 

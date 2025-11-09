@@ -23,6 +23,8 @@ export default function DashboardLayout() {
     { to: '/admin/products', label: 'Products' },
     { to: '/admin/orders', label: 'Orders' },
     { to: '/admin/categories', label: 'Categories' },
+    { to: '/admin/merchandise', label: 'Merchandise' },
+    { to: '/admin/placements', label: 'Placements' },
     { to: '/admin/settings', label: 'Settings' },
   ]
 
