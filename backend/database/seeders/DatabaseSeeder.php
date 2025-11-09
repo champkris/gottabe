@@ -58,7 +58,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
         ]);
 
-        // Create Creator 1 - Gottabe Studio (50 THB per order commission)
+        // Create Creator 1 - Gottabe Studio (10 THB per piece commission)
         $creator1 = Merchant::create([
             'user_id' => $creator1User->id,
             'business_name' => 'Gottabe Studio',
@@ -67,12 +67,12 @@ class DatabaseSeeder extends Seeder
             'business_email' => 'studio@gottabe.com',
             'business_phone' => '555-123-4567',
             'business_address' => '789 Creative Plaza, Bangkok',
-            'commission_amount' => 50.00,
+            'commission_amount' => 10.00,
             'is_approved' => true,
             'approved_at' => now(),
         ]);
 
-        // Create Creator 2 - TechVibe Designs (40 THB per order commission)
+        // Create Creator 2 - TechVibe Designs (8 THB per piece commission)
         $creator2 = Merchant::create([
             'user_id' => $creator2User->id,
             'business_name' => 'TechVibe Designs',
@@ -81,12 +81,12 @@ class DatabaseSeeder extends Seeder
             'business_email' => 'hello@techvibe.com',
             'business_phone' => '555-234-5678',
             'business_address' => '456 Innovation Center, Bangkok',
-            'commission_amount' => 40.00,
+            'commission_amount' => 8.00,
             'is_approved' => true,
             'approved_at' => now(),
         ]);
 
-        // Create Creator 3 - Artistic Touch (60 THB per order commission)
+        // Create Creator 3 - Artistic Touch (12 THB per piece commission)
         $creator3 = Merchant::create([
             'user_id' => $creator3User->id,
             'business_name' => 'Artistic Touch',
@@ -95,7 +95,7 @@ class DatabaseSeeder extends Seeder
             'business_email' => 'contact@artistictouch.com',
             'business_phone' => '555-345-6789',
             'business_address' => '123 Gallery District, Bangkok',
-            'commission_amount' => 60.00,
+            'commission_amount' => 12.00,
             'is_approved' => true,
             'approved_at' => now(),
         ]);

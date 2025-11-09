@@ -56,6 +56,10 @@ class AdminCreatorController extends Controller
                 ->where('products.merchant_id', $creator->id)
                 ->distinct('order_items.order_id')
                 ->count('order_items.order_id');
+            $creator->total_pieces_sold = DB::table('order_items')
+                ->join('products', 'order_items.product_id', '=', 'products.id')
+                ->where('products.merchant_id', $creator->id)
+                ->sum('order_items.quantity');
         });
 
         return response()->json($creators);
@@ -141,8 +145,12 @@ class AdminCreatorController extends Controller
             ->distinct('order_items.order_id')
             ->count('order_items.order_id');
 
-        // Calculate commission earned (fixed amount per order * number of orders)
-        $creator->commission_earned = $creator->commission_amount * $creator->total_orders;
+        // Calculate commission earned (fixed amount per piece * total pieces sold)
+        $totalPiecesSold = DB::table('order_items')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->where('products.merchant_id', $creator->id)
+            ->sum('order_items.quantity');
+        $creator->commission_earned = $creator->commission_amount * $totalPiecesSold;
 
         return response()->json($creator);
     }

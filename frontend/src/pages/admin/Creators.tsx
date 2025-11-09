@@ -39,6 +39,7 @@ interface Creator {
   active_products: number
   total_sales: number
   total_orders: number
+  total_pieces_sold: number
   commission_earned?: number
 }
 
@@ -359,7 +360,7 @@ export default function Creators() {
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Commission Earned</p>
                       <p className="text-sm font-semibold text-purple-600">
-                        {formatCurrency(creator.commission_amount * creator.total_orders)}
+                        {formatCurrency(creator.commission_amount * (creator.total_pieces_sold || 0))}
                       </p>
                     </div>
                   </div>
@@ -368,7 +369,7 @@ export default function Creators() {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       <DollarSign className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm font-medium">Commission per Order:</span>
+                      <span className="text-sm font-medium">Commission per Piece:</span>
                     </div>
 
                     {editingCommission === creator.id ? (
@@ -405,7 +406,7 @@ export default function Creators() {
                         <span className="text-lg font-bold text-primary">
                           {formatCurrency(creator.commission_amount)}
                         </span>
-                        <span className="text-sm text-gray-500">per order</span>
+                        <span className="text-sm text-gray-500">per piece</span>
                         <Button
                           size="sm"
                           variant="ghost"

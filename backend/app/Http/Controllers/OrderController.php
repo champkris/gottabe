@@ -105,6 +105,7 @@ class OrderController extends Controller
                 // Calculate totals for this merchant's items
                 $subtotal = 0;
                 $orderItems = [];
+                $totalQuantity = 0;
 
                 foreach ($merchantItems as $item) {
                     $product = $products[$item['product_id']];
@@ -117,6 +118,7 @@ class OrderController extends Controller
                     $price = $product->sale_price ?? $product->price;
                     $itemSubtotal = $price * $item['quantity'];
                     $subtotal += $itemSubtotal;
+                    $totalQuantity += $item['quantity'];
 
                     $orderItems[] = [
                         'product_id' => $product->id,
@@ -135,8 +137,8 @@ class OrderController extends Controller
                 $tax = ($validated['tax'] / $totalItemCount) * $merchantItemCount;
                 $total = $subtotal + $shipping + $tax;
 
-                // Calculate commission (fixed THB amount per order)
-                $commissionAmount = $merchant->commission_amount;
+                // Calculate commission (fixed THB amount per piece sold)
+                $commissionAmount = $merchant->commission_amount * $totalQuantity;
                 $merchantPayout = $total - $commissionAmount;
 
                 // Convert shipping address array to JSON string

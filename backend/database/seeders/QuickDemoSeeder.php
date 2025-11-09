@@ -44,7 +44,7 @@ class QuickDemoSeeder extends Seeder
             'business_email' => 'studio@gottabe.com',
             'business_phone' => '555-0123',
             'business_address' => '123 Awesome Street, Bangkok',
-            'commission_amount' => 50.00,
+            'commission_amount' => 10.00,
             'is_approved' => true,
             'approved_at' => now(),
         ]);
