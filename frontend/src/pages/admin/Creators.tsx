@@ -25,7 +25,7 @@ interface Creator {
   slug: string
   business_email: string
   business_phone: string
-  commission_rate: number
+  commission_amount: number
   is_approved: boolean
   approved_at: string | null
   created_at: string
@@ -48,7 +48,7 @@ export default function Creators() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending'>('all')
   const [editingCommission, setEditingCommission] = useState<number | null>(null)
-  const [commissionRate, setCommissionRate] = useState<string>('')
+  const [commissionAmount, setCommissionAmount] = useState<string>('')
 
   useEffect(() => {
     fetchCreators()
@@ -93,17 +93,17 @@ export default function Creators() {
 
   const handleUpdateCommission = async (id: number) => {
     try {
-      const rate = parseFloat(commissionRate)
-      if (isNaN(rate) || rate < 0 || rate > 100) {
-        toast.error('Commission rate must be between 0 and 100')
+      const amount = parseFloat(commissionAmount)
+      if (isNaN(amount) || amount < 0) {
+        toast.error('Commission amount must be 0 or greater')
         return
       }
-      await api.put(`/admin/creators/${id}/commission`, { commission_rate: rate })
-      toast.success('Commission rate updated successfully')
+      await api.put(`/admin/creators/${id}/commission`, { commission_amount: amount })
+      toast.success('Commission amount updated successfully')
       setEditingCommission(null)
       fetchCreators()
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to update commission rate')
+      toast.error(error.response?.data?.message || 'Failed to update commission amount')
     }
   }
 
@@ -152,7 +152,7 @@ export default function Creators() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Manage Creators</h1>
         <p className="text-gray-600">
-          Manage creator accounts, configure commission rates, and monitor performance
+          Manage creator accounts, configure commission amounts, and monitor performance
         </p>
       </div>
 
@@ -359,16 +359,16 @@ export default function Creators() {
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Commission Earned</p>
                       <p className="text-sm font-semibold text-purple-600">
-                        {formatCurrency(creator.total_sales * (creator.commission_rate / 100))}
+                        {formatCurrency(creator.commission_amount * creator.total_orders)}
                       </p>
                     </div>
                   </div>
 
-                  {/* Commission Rate Editor */}
+                  {/* Commission Amount Editor */}
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       <DollarSign className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm font-medium">Commission Rate:</span>
+                      <span className="text-sm font-medium">Commission per Order:</span>
                     </div>
 
                     {editingCommission === creator.id ? (
@@ -376,14 +376,13 @@ export default function Creators() {
                         <Input
                           type="number"
                           min="0"
-                          max="100"
-                          step="0.1"
-                          value={commissionRate}
-                          onChange={(e) => setCommissionRate(e.target.value)}
-                          className="w-24"
-                          placeholder="0-100"
+                          step="0.01"
+                          value={commissionAmount}
+                          onChange={(e) => setCommissionAmount(e.target.value)}
+                          className="w-32"
+                          placeholder="Amount in THB"
                         />
-                        <span className="text-sm">%</span>
+                        <span className="text-sm">THB</span>
                         <Button
                           size="sm"
                           onClick={() => handleUpdateCommission(creator.id)}
@@ -395,7 +394,7 @@ export default function Creators() {
                           variant="outline"
                           onClick={() => {
                             setEditingCommission(null)
-                            setCommissionRate('')
+                            setCommissionAmount('')
                           }}
                         >
                           Cancel
@@ -404,14 +403,15 @@ export default function Creators() {
                     ) : (
                       <div className="flex items-center gap-2">
                         <span className="text-lg font-bold text-primary">
-                          {creator.commission_rate}%
+                          {formatCurrency(creator.commission_amount)}
                         </span>
+                        <span className="text-sm text-gray-500">per order</span>
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => {
                             setEditingCommission(creator.id)
-                            setCommissionRate(creator.commission_rate.toString())
+                            setCommissionAmount(creator.commission_amount.toString())
                           }}
                         >
                           <Edit className="h-4 w-4" />
