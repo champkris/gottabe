@@ -50,6 +50,11 @@ Route::get('/merchants/{merchant:slug}/products', [MerchantController::class, 'p
 // Artwork public routes
 Route::get('/artworks/{artwork}/url', [CreatorArtworkController::class, 'getFileUrl']);
 
+// Merchandise public routes (for product creation)
+Route::get('/merchandise-types', [AdminMerchandiseController::class, 'index']);
+Route::get('/merchandise-types/{merchandise}', [AdminMerchandiseController::class, 'show']);
+Route::get('/placement-options', [AdminPlacementController::class, 'index']);
+
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     // Auth routes
