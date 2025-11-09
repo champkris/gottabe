@@ -24,13 +24,14 @@ import Orders from '@/pages/customer/Orders'
 import OrderDetail from '@/pages/customer/OrderDetail'
 import Profile from '@/pages/customer/Profile'
 
-// Merchant Pages
+// Merchant/Creator Pages
 import MerchantDashboard from '@/pages/merchant/Dashboard'
 import MerchantProducts from '@/pages/merchant/Products'
 import MerchantProductForm from '@/pages/merchant/ProductForm'
 import MerchantOrders from '@/pages/merchant/Orders'
 import MerchantAnalytics from '@/pages/merchant/Analytics'
 import MerchantSettings from '@/pages/merchant/Settings'
+import CreatorArtworks from '@/pages/creator/Artworks'
 
 // Admin Pages
 import AdminDashboard from '@/pages/admin/Dashboard'
@@ -104,6 +105,7 @@ function App() {
         }
       >
         <Route index element={<MerchantDashboard />} />
+        <Route path="artworks" element={<CreatorArtworks />} />
         <Route path="products" element={<MerchantProducts />} />
         <Route path="products/new" element={<MerchantProductForm />} />
         <Route path="products/:id/edit" element={<MerchantProductForm />} />

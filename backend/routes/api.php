@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\AdminPlacementController;
 use App\Http\Controllers\Merchant\MerchantDashboardController;
 use App\Http\Controllers\Merchant\MerchantProductController;
 use App\Http\Controllers\Merchant\MerchantOrderController;
+use App\Http\Controllers\Creator\CreatorArtworkController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +46,9 @@ Route::get('/categories/{category:slug}/products', [CategoryController::class, '
 Route::get('/merchants', [MerchantController::class, 'index']);
 Route::get('/merchants/{merchant:slug}', [MerchantController::class, 'show']);
 Route::get('/merchants/{merchant:slug}/products', [MerchantController::class, 'products']);
+
+// Artwork public routes
+Route::get('/artworks/{artwork}/url', [CreatorArtworkController::class, 'getFileUrl']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -81,6 +85,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/profile', [MerchantDashboardController::class, 'profile'])->name('profile');
         Route::get('/status', [MerchantDashboardController::class, 'status'])->name('status');
         Route::put('/profile', [MerchantDashboardController::class, 'updateProfile']);
+
+        // Artworks
+        Route::get('/artworks', [CreatorArtworkController::class, 'index']);
+        Route::post('/artworks', [CreatorArtworkController::class, 'store']);
+        Route::get('/artworks/{artwork}', [CreatorArtworkController::class, 'show']);
+        Route::put('/artworks/{artwork}', [CreatorArtworkController::class, 'update']);
+        Route::delete('/artworks/{artwork}', [CreatorArtworkController::class, 'destroy']);
 
         // Products
         Route::get('/products', [MerchantProductController::class, 'index']);

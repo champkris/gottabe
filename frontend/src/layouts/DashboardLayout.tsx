@@ -12,6 +12,7 @@ export default function DashboardLayout() {
 
   const creatorLinks = [
     { to: '/creator', label: 'Dashboard' },
+    { to: '/creator/artworks', label: 'My Artworks' },
     { to: '/creator/products', label: 'Products' },
     { to: '/creator/analytics', label: 'Analytics' },
     { to: '/creator/settings', label: 'Settings' },
