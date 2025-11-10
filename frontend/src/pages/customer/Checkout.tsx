@@ -110,10 +110,45 @@ export default function Checkout() {
           })
 
           if (paymentResponse.data.success && paymentResponse.data.payment_url) {
+            // Log payment data for debugging
+            console.log('=== PaySolutions Payment Debug ===')
+            console.log('Payment URL:', paymentResponse.data.payment_url)
+            console.log('Form Data:', paymentResponse.data.form_data)
+            console.log('Debug Info:', paymentResponse.data.debug_info)
+            console.log('Return URL:', paymentResponse.data.debug_info?.return_url)
+            console.log('Callback URL:', paymentResponse.data.debug_info?.callback_url)
+            console.log('=================================')
+
             toast.success('Redirecting to payment gateway...')
-            // Redirect to PaySolutions payment page
-            window.location.href = paymentResponse.data.payment_url
-            return
+
+            // Check if this is a form-based payment (has form_data)
+            if (paymentResponse.data.form_data && paymentResponse.data.method === 'POST') {
+              // Create a form and auto-submit it to PaySolutions
+              const form = document.createElement('form')
+              form.method = 'POST'
+              form.action = paymentResponse.data.payment_url
+
+              // Add all form fields
+              Object.entries(paymentResponse.data.form_data).forEach(([key, value]) => {
+                const input = document.createElement('input')
+                input.type = 'hidden'
+                input.name = key
+                input.value = value as string
+                form.appendChild(input)
+                console.log(`Form field: ${key} = ${value}`)
+              })
+
+              console.log('Submitting form to:', form.action)
+
+              // Add form to document and submit
+              document.body.appendChild(form)
+              form.submit()
+              return
+            } else {
+              // Simple redirect for GET requests
+              window.location.href = paymentResponse.data.payment_url
+              return
+            }
           } else {
             throw new Error('Failed to initiate payment')
           }

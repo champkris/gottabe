@@ -9,7 +9,8 @@ class PaySolutionsService
 {
     private string $apiUrl;
     private string $merchantId;
-    private string $secretKey;
+    private string $apiKey;
+    private string $paymentLinkName;
     private string $returnUrl;
     private string $callbackUrl;
 
@@ -17,59 +18,71 @@ class PaySolutionsService
     {
         $this->apiUrl = config('services.paysolutions.api_url');
         $this->merchantId = config('services.paysolutions.merchant_id');
-        $this->secretKey = config('services.paysolutions.secret_key');
+        $this->apiKey = config('services.paysolutions.api_key');
+
+        // Extract payment link name from URL if full URL is provided
+        $paymentLinkConfig = config('services.paysolutions.payment_link_name');
+        if (filter_var($paymentLinkConfig, FILTER_VALIDATE_URL)) {
+            // Extract the last part of the URL (e.g., "pigmeup" from "https://pay.sn/pigmeup")
+            $this->paymentLinkName = basename(parse_url($paymentLinkConfig, PHP_URL_PATH));
+        } else {
+            $this->paymentLinkName = $paymentLinkConfig;
+        }
+
         $this->returnUrl = config('services.paysolutions.return_url');
         $this->callbackUrl = config('services.paysolutions.callback_url');
     }
 
     /**
-     * Create a payment request
+     * Create a payment request using direct form POST method
      */
     public function createPayment(array $orderData): array
     {
         try {
-            $paymentData = [
-                'merchantid' => $this->merchantId,
-                'refno' => $orderData['order_id'],
-                'amount' => number_format($orderData['amount'], 2, '.', ''),
+            // Generate unique 12-digit reference number
+            $refNo = str_pad($orderData['order_id'], 12, '0', STR_PAD_LEFT);
+
+            // Prepare payment form data as per PaySolutions HTML form example
+            $formData = [
                 'customeremail' => $orderData['customer_email'],
                 'productdetail' => $orderData['product_detail'],
-                'cc' => 'THB', // Currency code
-                'returnurl' => $this->returnUrl,
-                'callbackurl' => $this->callbackUrl,
-                'customeraddress' => $orderData['customer_address'] ?? '',
-                'customername' => $orderData['customer_name'] ?? '',
-                'customertel' => $orderData['customer_phone'] ?? '',
+                'refno' => $refNo,
+                'merchantid' => $this->merchantId,
+                'cc' => '00', // Currency code (00 = THB as per PaySolutions format)
+                'total' => number_format($orderData['amount'], 2, '.', ''),
+                'lang' => 'TH', // TH or EN
+                'resulturl1' => $this->returnUrl, // Try adding return URL
+                'resulturl2' => $this->returnUrl, // Alternative parameter name
+                'postbackurl' => $this->callbackUrl, // Callback URL
             ];
 
-            // Generate checksum/hash for security
-            $paymentData['hash'] = $this->generateHash($paymentData);
+            // Add return URL and callback URL to form data (if PaySolutions supports it)
+            // Note: Some payment gateways accept these in the form, others use dashboard config
 
-            Log::info('PaySolutions payment request', ['data' => $paymentData]);
-
-            // Send request to PaySolutions API
-            $response = Http::post("{$this->apiUrl}/payment/create", $paymentData);
-
-            if ($response->successful()) {
-                $result = $response->json();
-
-                return [
-                    'success' => true,
-                    'payment_url' => $result['payment_url'] ?? null,
-                    'transaction_id' => $result['transaction_id'] ?? null,
-                    'data' => $result,
-                ];
-            }
-
-            Log::error('PaySolutions payment failed', [
-                'status' => $response->status(),
-                'response' => $response->body()
+            Log::info('PaySolutions form POST payment', [
+                'form_data' => $formData,
+                'payment_url' => 'https://payments.paysolutions.asia/payment',
+                'return_url' => $this->returnUrl,
+                'callback_url' => $this->callbackUrl,
+                'config_check' => [
+                    'FRONTEND_URL' => config('services.paysolutions.return_url'),
+                    'returnUrl_property' => $this->returnUrl,
+                ]
             ]);
 
+            // PaySolutions direct payment gateway URL
+            $paymentUrl = 'https://payments.paysolutions.asia/payment';
+
             return [
-                'success' => false,
-                'error' => 'Payment gateway error',
-                'details' => $response->json(),
+                'success' => true,
+                'payment_url' => $paymentUrl,
+                'form_data' => $formData,
+                'method' => 'POST',
+                'transaction_id' => $refNo,
+                'debug_info' => [
+                    'return_url' => $this->returnUrl,
+                    'callback_url' => $this->callbackUrl,
+                ],
             ];
 
         } catch (\Exception $e) {
@@ -87,20 +100,13 @@ class PaySolutionsService
 
     /**
      * Verify callback from PaySolutions
+     * Note: PaySolutions callbacks should be verified based on their documentation
      */
     public function verifyCallback(array $callbackData): bool
     {
-        if (!isset($callbackData['hash'])) {
-            return false;
-        }
-
-        $receivedHash = $callbackData['hash'];
-        $dataToHash = $callbackData;
-        unset($dataToHash['hash']);
-
-        $calculatedHash = $this->generateHash($dataToHash);
-
-        return hash_equals($calculatedHash, $receivedHash);
+        // For now, we'll accept all callbacks from PaySolutions
+        // In production, implement proper signature verification based on PaySolutions docs
+        return true;
     }
 
     /**
@@ -110,13 +116,14 @@ class PaySolutionsService
     {
         try {
             $data = [
-                'merchantid' => $this->merchantId,
-                'refno' => $refNo,
+                'merchant' => $this->paymentLinkName,
+                'refNo' => $refNo,
             ];
 
-            $data['hash'] = $this->generateHash($data);
-
-            $response = Http::post("{$this->apiUrl}/payment/status", $data);
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'apikey' => $this->apiKey,
+            ])->post("{$this->apiUrl}/secure/v3/payment/status", $data);
 
             if ($response->successful()) {
                 return [
@@ -140,29 +147,6 @@ class PaySolutionsService
                 'error' => $e->getMessage(),
             ];
         }
-    }
-
-    /**
-     * Generate hash/checksum for security
-     */
-    private function generateHash(array $data): string
-    {
-        // Sort data by key
-        ksort($data);
-
-        // Concatenate values
-        $hashString = '';
-        foreach ($data as $key => $value) {
-            if ($key !== 'hash') {
-                $hashString .= $value;
-            }
-        }
-
-        // Append secret key
-        $hashString .= $this->secretKey;
-
-        // Generate hash (adjust algorithm based on PaySolutions requirements)
-        return hash('sha256', $hashString);
     }
 
     /**

@@ -16,6 +16,7 @@ import Shop from '@/pages/Shop'
 import Categories from '@/pages/Categories'
 import ProductDetail from '@/pages/ProductDetail'
 import MerchantStore from '@/pages/MerchantStore'
+import PaymentReturn from '@/pages/PaymentReturn'
 
 // Customer Pages
 import Cart from '@/pages/customer/Cart'
@@ -77,6 +78,7 @@ function App() {
         <Route path="categories" element={<Categories />} />
         <Route path="product/:slug" element={<ProductDetail />} />
         <Route path="store/:slug" element={<MerchantStore />} />
+        <Route path="payment/return" element={<PaymentReturn />} />
       </Route>
 
       {/* Customer Protected Routes */}
