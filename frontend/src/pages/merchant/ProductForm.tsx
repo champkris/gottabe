@@ -411,7 +411,7 @@ export default function ProductForm() {
                     id="merchandise_type_id"
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                     {...register('merchandise_type_id', {
-                      valueAsNumber: true,
+                      setValueAs: (v) => v === '' ? null : parseInt(v, 10),
                     })}
                   >
                     <option value="">Select merchandise type (optional)</option>
@@ -435,7 +435,7 @@ export default function ProductForm() {
                     id="artwork_id"
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                     {...register('artwork_id', {
-                      valueAsNumber: true,
+                      setValueAs: (v) => v === '' ? null : parseInt(v, 10),
                     })}
                     disabled={!merchandiseTypeId}
                   >
@@ -468,7 +468,7 @@ export default function ProductForm() {
                       id="placement_option_id"
                       className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                       {...register('placement_option_id', {
-                        valueAsNumber: true,
+                        setValueAs: (v) => v === '' ? null : parseInt(v, 10),
                       })}
                     >
                       <option value="">Select placement (optional)</option>
