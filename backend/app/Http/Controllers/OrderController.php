@@ -57,7 +57,7 @@ class OrderController extends Controller
             'shipping_address.state' => 'required|string',
             'shipping_address.zip' => 'required|string',
             'shipping_address.country' => 'required|string',
-            'payment_method' => 'required|string|in:card,cod',
+            'payment_method' => 'required|string|in:card,cod,paysolutions',
             'notes' => 'nullable|string',
             'subtotal' => 'required|numeric|min:0',
             'shipping_fee' => 'required|numeric|min:0',
