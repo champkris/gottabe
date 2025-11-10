@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Artwork extends Model
 {
@@ -24,6 +25,8 @@ class Artwork extends Model
         'is_active' => 'boolean',
     ];
 
+    protected $appends = ['file_url'];
+
     /**
      * Get the merchant that owns this artwork
      */
@@ -38,5 +41,17 @@ class Artwork extends Model
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    /**
+     * Get the file URL attribute.
+     */
+    public function getFileUrlAttribute(): ?string
+    {
+        if (!$this->file_path) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($this->file_path);
     }
 }
