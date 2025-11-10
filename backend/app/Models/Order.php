@@ -23,6 +23,7 @@ class Order extends Model
         'total',
         'commission_rate',
         'commission_amount',
+        'commission_amount_per_order',
         'merchant_payout',
         'payment_method',
         'payment_status',
