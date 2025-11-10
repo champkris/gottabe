@@ -20,6 +20,29 @@ interface Category {
   name: string
 }
 
+interface Artwork {
+  id: number
+  name: string
+  file_path: string
+}
+
+interface MerchandiseType {
+  id: number
+  name: string
+  description: string
+  base_price: number
+  sizes: string[]
+  colors: string[]
+  placement_options?: PlacementOption[]
+}
+
+interface PlacementOption {
+  id: number
+  name: string
+  description: string
+  price_modifier?: number
+}
+
 interface ProductFormData {
   name: string
   sku: string
@@ -28,6 +51,11 @@ interface ProductFormData {
   sale_price: number | null
   stock: number
   category_id: number
+  merchandise_type_id: number | null
+  artwork_id: number | null
+  placement_option_id: number | null
+  size: string | null
+  color: string | null
   is_active: boolean
   images: string[]
 }
@@ -39,28 +67,61 @@ export default function ProductForm() {
 
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
+  const [artworks, setArtworks] = useState<Artwork[]>([])
+  const [merchandiseTypes, setMerchandiseTypes] = useState<MerchandiseType[]>([])
+  const [placementOptions, setPlacementOptions] = useState<PlacementOption[]>([])
+  const [selectedMerchandise, setSelectedMerchandise] = useState<MerchandiseType | null>(null)
   const [images, setImages] = useState<string[]>([])
   const [imageUrls, setImageUrls] = useState<string[]>([])
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [mockupPreview, setMockupPreview] = useState<string | null>(null)
 
   const {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<ProductFormData>({
     defaultValues: {
       is_active: true,
       sale_price: null,
+      merchandise_type_id: null,
+      artwork_id: null,
+      placement_option_id: null,
+      size: null,
+      color: null,
     },
   })
 
+  const merchandiseTypeId = watch('merchandise_type_id')
+  const artworkId = watch('artwork_id')
+  const placementOptionId = watch('placement_option_id')
+  const color = watch('color')
+
   useEffect(() => {
     fetchCategories()
+    fetchArtworks()
+    fetchMerchandiseTypes()
     if (isEditMode) {
       fetchProduct()
     }
   }, [id])
+
+  // Update placement options when merchandise type changes
+  useEffect(() => {
+    if (merchandiseTypeId) {
+      const merchandise = merchandiseTypes.find(m => m.id === merchandiseTypeId)
+      setSelectedMerchandise(merchandise || null)
+      if (merchandise?.placement_options) {
+        setPlacementOptions(merchandise.placement_options)
+      }
+    } else {
+      setSelectedMerchandise(null)
+      setPlacementOptions([])
+    }
+  }, [merchandiseTypeId, merchandiseTypes])
 
   const fetchCategories = async () => {
     try {
@@ -69,6 +130,45 @@ export default function ProductForm() {
     } catch (error) {
       console.error('Failed to fetch categories:', error)
       toast.error('Failed to load categories')
+    }
+  }
+
+  const fetchArtworks = async () => {
+    try {
+      const response = await api.get('/creator/artworks')
+      setArtworks(response.data.data || response.data)
+    } catch (error) {
+      console.error('Failed to fetch artworks:', error)
+      toast.error('Failed to load artworks')
+    }
+  }
+
+  const fetchMerchandiseTypes = async () => {
+    try {
+      const response = await api.get('/merchandise-types')
+      const types = response.data.data || response.data
+
+      // Fetch placement options for each merchandise type
+      const typesWithPlacements = await Promise.all(
+        types.map(async (type: MerchandiseType) => {
+          try {
+            const detailResponse = await api.get(`/merchandise-types/${type.id}`)
+            const details = detailResponse.data.data || detailResponse.data
+            return {
+              ...type,
+              placement_options: details.placement_options || []
+            }
+          } catch (error) {
+            console.error(`Failed to fetch placements for ${type.name}:`, error)
+            return type
+          }
+        })
+      )
+
+      setMerchandiseTypes(typesWithPlacements)
+    } catch (error) {
+      console.error('Failed to fetch merchandise types:', error)
+      toast.error('Failed to load merchandise types')
     }
   }
 
@@ -85,10 +185,19 @@ export default function ProductForm() {
         sale_price: product.sale_price,
         stock: product.stock,
         category_id: product.category_id,
+        merchandise_type_id: product.merchandise_type_id,
+        artwork_id: product.artwork_id,
+        placement_option_id: product.placement_option_id,
+        size: product.size,
+        color: product.color,
         is_active: product.is_active,
+        images: product.images || [],
       })
       setImages(product.images || [])
       setImageUrls(product.images || [])
+      if (product.mockup_image) {
+        setMockupPreview(product.mockup_image)
+      }
     } catch (error: any) {
       console.error('Failed to fetch product:', error)
       toast.error('Failed to load product')
@@ -113,8 +222,9 @@ export default function ProductForm() {
   }
 
   const onSubmit = async (data: ProductFormData) => {
-    if (images.length === 0) {
-      toast.error('Please add at least one product image')
+    // Validate that either images are provided OR merchandise/artwork/placement for mockup generation
+    if (images.length === 0 && (!data.merchandise_type_id || !data.artwork_id || !data.placement_option_id)) {
+      toast.error('Please either add product images OR select merchandise type, artwork, and placement for mockup generation')
       return
     }
 
@@ -122,8 +232,13 @@ export default function ProductForm() {
       setLoading(true)
       const productData = {
         ...data,
-        images: images,
+        images: images.length > 0 ? images : undefined,
         sale_price: data.sale_price || null,
+        merchandise_type_id: data.merchandise_type_id || null,
+        artwork_id: data.artwork_id || null,
+        placement_option_id: data.placement_option_id || null,
+        size: data.size || null,
+        color: data.color || null,
       }
 
       if (isEditMode) {
@@ -277,6 +392,151 @@ export default function ProductForm() {
               </CardContent>
             </Card>
 
+            {/* Print-on-Demand Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Print-on-Demand Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  Configure merchandise type, artwork, and placement for automatic mockup generation
+                </p>
+
+                {/* Merchandise Type */}
+                <div className="space-y-2">
+                  <label htmlFor="merchandise_type_id" className="text-sm font-medium">
+                    Merchandise Type
+                  </label>
+                  <select
+                    id="merchandise_type_id"
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    {...register('merchandise_type_id', {
+                      valueAsNumber: true,
+                    })}
+                  >
+                    <option value="">Select merchandise type (optional)</option>
+                    {merchandiseTypes.map((type) => (
+                      <option key={type.id} value={type.id}>
+                        {type.name} - ฿{type.base_price}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500">
+                    Choose the type of merchandise for your product
+                  </p>
+                </div>
+
+                {/* Artwork Selection */}
+                <div className="space-y-2">
+                  <label htmlFor="artwork_id" className="text-sm font-medium">
+                    Artwork
+                  </label>
+                  <select
+                    id="artwork_id"
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    {...register('artwork_id', {
+                      valueAsNumber: true,
+                    })}
+                    disabled={!merchandiseTypeId}
+                  >
+                    <option value="">Select artwork (optional)</option>
+                    {artworks.map((artwork) => (
+                      <option key={artwork.id} value={artwork.id}>
+                        {artwork.name}
+                      </option>
+                    ))}
+                  </select>
+                  {artworks.length === 0 && (
+                    <p className="text-xs text-amber-600">
+                      No artworks found. Upload artworks in the Artworks section first.
+                    </p>
+                  )}
+                  {!merchandiseTypeId && (
+                    <p className="text-xs text-gray-500">
+                      Select a merchandise type first
+                    </p>
+                  )}
+                </div>
+
+                {/* Placement Option */}
+                {selectedMerchandise && placementOptions.length > 0 && (
+                  <div className="space-y-2">
+                    <label htmlFor="placement_option_id" className="text-sm font-medium">
+                      Placement Position
+                    </label>
+                    <select
+                      id="placement_option_id"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      {...register('placement_option_id', {
+                        valueAsNumber: true,
+                      })}
+                    >
+                      <option value="">Select placement (optional)</option>
+                      {placementOptions.map((placement) => (
+                        <option key={placement.id} value={placement.id}>
+                          {placement.name}
+                          {placement.price_modifier && ` (+฿${placement.price_modifier})`}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500">
+                      Choose where the artwork will be placed on the merchandise
+                    </p>
+                  </div>
+                )}
+
+                {/* Size Selection */}
+                {selectedMerchandise && selectedMerchandise.sizes && selectedMerchandise.sizes.length > 0 && (
+                  <div className="space-y-2">
+                    <label htmlFor="size" className="text-sm font-medium">
+                      Size
+                    </label>
+                    <select
+                      id="size"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      {...register('size')}
+                    >
+                      <option value="">Select size (optional)</option>
+                      {selectedMerchandise.sizes.map((size) => (
+                        <option key={size} value={size}>
+                          {size}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Color Selection */}
+                {selectedMerchandise && selectedMerchandise.colors && selectedMerchandise.colors.length > 0 && (
+                  <div className="space-y-2">
+                    <label htmlFor="color" className="text-sm font-medium">
+                      Color
+                    </label>
+                    <select
+                      id="color"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      {...register('color')}
+                    >
+                      <option value="">Select color (optional)</option>
+                      {selectedMerchandise.colors.map((colorOption) => (
+                        <option key={colorOption} value={colorOption}>
+                          {colorOption}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {merchandiseTypeId && artworkId && placementOptionId && (
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-700">
+                      ✓ Mockup will be generated automatically when you save the product
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Pricing & Inventory */}
             <Card>
               <CardHeader>
@@ -364,6 +624,11 @@ export default function ProductForm() {
               <CardContent className="space-y-4">
                 <p className="text-sm text-gray-600">
                   Add images by providing URLs. First image will be the main product image.
+                  {merchandiseTypeId && artworkId && placementOptionId && (
+                    <span className="block mt-1 text-green-600 font-medium">
+                      Note: A mockup image will be generated automatically and added as the main image.
+                    </span>
+                  )}
                 </p>
 
                 {/* Image Grid */}
@@ -403,8 +668,10 @@ export default function ProductForm() {
                   </button>
                 </div>
 
-                {images.length === 0 && (
-                  <p className="text-sm text-red-500">At least one image is required</p>
+                {images.length === 0 && !merchandiseTypeId && (
+                  <p className="text-sm text-red-500">
+                    At least one image is required (or configure print-on-demand settings above)
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -469,6 +736,15 @@ export default function ProductForm() {
                 <p>• Write detailed descriptions with key features</p>
                 <p>• Keep your inventory up to date</p>
                 <p>• Use sale prices for promotions</p>
+                {merchandiseTypeId && (
+                  <>
+                    <hr className="my-2" />
+                    <p className="font-medium text-primary">Print-on-Demand:</p>
+                    <p>• Upload artworks before creating products</p>
+                    <p>• Mockups are generated automatically</p>
+                    <p>• You can preview mockups after saving</p>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>

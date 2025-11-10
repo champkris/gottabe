@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Services\MockupService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -66,7 +67,7 @@ class MerchantProductController extends Controller
     /**
      * Store a newly created product.
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, MockupService $mockupService): JsonResponse
     {
         $merchant = $request->user()->merchant;
 
@@ -76,6 +77,9 @@ class MerchantProductController extends Controller
 
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
+            'merchandise_type_id' => 'nullable|exists:merchandise_types,id',
+            'artwork_id' => 'nullable|exists:artworks,id',
+            'placement_option_id' => 'nullable|exists:placement_options,id',
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'short_description' => 'nullable|string|max:500',
@@ -86,6 +90,8 @@ class MerchantProductController extends Controller
             'barcode' => 'nullable|string',
             'stock' => 'required|integer|min:0',
             'min_stock' => 'integer|min:0',
+            'size' => 'nullable|string',
+            'color' => 'nullable|string',
             'images' => 'nullable|array',
             'images.*' => 'string', // URLs or base64
             'attributes' => 'nullable|array',
@@ -101,11 +107,39 @@ class MerchantProductController extends Controller
 
         $validated['merchant_id'] = $merchant->id;
 
+        // Generate mockup if merchandise, artwork, and placement are provided
+        if (
+            !empty($validated['merchandise_type_id']) &&
+            !empty($validated['artwork_id']) &&
+            !empty($validated['placement_option_id'])
+        ) {
+            try {
+                $mockupPath = $mockupService->generateMockup(
+                    $validated['merchandise_type_id'],
+                    $validated['artwork_id'],
+                    $validated['placement_option_id'],
+                    $validated['color'] ?? null
+                );
+                $validated['mockup_image'] = $mockupPath;
+
+                // Add mockup to images array if not already present
+                if (!isset($validated['images'])) {
+                    $validated['images'] = [];
+                }
+                $mockupUrl = $mockupService->getMockupUrl($mockupPath);
+                array_unshift($validated['images'], $mockupUrl);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => 'Failed to generate mockup: ' . $e->getMessage(),
+                ], 422);
+            }
+        }
+
         $product = Product::create($validated);
 
         return response()->json([
             'message' => 'Product created successfully',
-            'product' => $product->load('category'),
+            'product' => $product->load(['category', 'merchandiseType', 'artwork', 'placementOption']),
         ], 201);
     }
 
@@ -131,7 +165,7 @@ class MerchantProductController extends Controller
     /**
      * Update the specified product.
      */
-    public function update(Request $request, Product $product): JsonResponse
+    public function update(Request $request, Product $product, MockupService $mockupService): JsonResponse
     {
         $merchant = $request->user()->merchant;
 
@@ -142,6 +176,9 @@ class MerchantProductController extends Controller
 
         $validated = $request->validate([
             'category_id' => 'sometimes|exists:categories,id',
+            'merchandise_type_id' => 'nullable|exists:merchandise_types,id',
+            'artwork_id' => 'nullable|exists:artworks,id',
+            'placement_option_id' => 'nullable|exists:placement_options,id',
             'name' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
             'short_description' => 'nullable|string|max:500',
@@ -152,6 +189,8 @@ class MerchantProductController extends Controller
             'barcode' => 'nullable|string',
             'stock' => 'sometimes|integer|min:0',
             'min_stock' => 'sometimes|integer|min:0',
+            'size' => 'nullable|string',
+            'color' => 'nullable|string',
             'images' => 'nullable|array',
             'attributes' => 'nullable|array',
             'tags' => 'nullable|array',
@@ -173,11 +212,58 @@ class MerchantProductController extends Controller
             }
         }
 
+        // Regenerate mockup if merchandise-related fields changed
+        $shouldRegenerateMockup = (
+            (isset($validated['merchandise_type_id']) && $validated['merchandise_type_id'] !== $product->merchandise_type_id) ||
+            (isset($validated['artwork_id']) && $validated['artwork_id'] !== $product->artwork_id) ||
+            (isset($validated['placement_option_id']) && $validated['placement_option_id'] !== $product->placement_option_id) ||
+            (isset($validated['color']) && $validated['color'] !== $product->color)
+        );
+
+        if ($shouldRegenerateMockup) {
+            $merchandiseId = $validated['merchandise_type_id'] ?? $product->merchandise_type_id;
+            $artworkId = $validated['artwork_id'] ?? $product->artwork_id;
+            $placementId = $validated['placement_option_id'] ?? $product->placement_option_id;
+            $color = $validated['color'] ?? $product->color;
+
+            if ($merchandiseId && $artworkId && $placementId) {
+                try {
+                    // Delete old mockup
+                    if ($product->mockup_image) {
+                        $mockupService->deleteMockup($product->mockup_image);
+                    }
+
+                    // Generate new mockup
+                    $mockupPath = $mockupService->generateMockup(
+                        $merchandiseId,
+                        $artworkId,
+                        $placementId,
+                        $color
+                    );
+                    $validated['mockup_image'] = $mockupPath;
+
+                    // Update first image in images array
+                    $mockupUrl = $mockupService->getMockupUrl($mockupPath);
+                    $images = $validated['images'] ?? $product->images ?? [];
+                    if (count($images) > 0) {
+                        $images[0] = $mockupUrl;
+                    } else {
+                        $images = [$mockupUrl];
+                    }
+                    $validated['images'] = $images;
+                } catch (\Exception $e) {
+                    return response()->json([
+                        'message' => 'Failed to generate mockup: ' . $e->getMessage(),
+                    ], 422);
+                }
+            }
+        }
+
         $product->update($validated);
 
         return response()->json([
             'message' => 'Product updated successfully',
-            'product' => $product->fresh('category'),
+            'product' => $product->fresh(['category', 'merchandiseType', 'artwork', 'placementOption']),
         ]);
     }
 
