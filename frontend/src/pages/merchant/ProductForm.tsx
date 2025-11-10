@@ -32,7 +32,7 @@ interface MerchandiseType {
   description: string
   base_price: number
   sizes: string[]
-  colors: string[]
+  colors: Array<{ code: string; name: string }>
   placement_options?: PlacementOption[]
 }
 
@@ -40,7 +40,9 @@ interface PlacementOption {
   id: number
   name: string
   description: string
-  price_modifier?: number
+  pivot?: {
+    price_modifier: string
+  }
 }
 
 interface ProductFormData {
@@ -475,7 +477,7 @@ export default function ProductForm() {
                       {placementOptions.map((placement) => (
                         <option key={placement.id} value={placement.id}>
                           {placement.name}
-                          {placement.price_modifier && ` (+฿${placement.price_modifier})`}
+                          {placement.pivot?.price_modifier && parseFloat(placement.pivot.price_modifier) > 0 && ` (+฿${placement.pivot.price_modifier})`}
                         </option>
                       ))}
                     </select>
@@ -519,8 +521,8 @@ export default function ProductForm() {
                     >
                       <option value="">Select color (optional)</option>
                       {selectedMerchandise.colors.map((colorOption) => (
-                        <option key={colorOption} value={colorOption}>
-                          {colorOption}
+                        <option key={colorOption.code} value={colorOption.code}>
+                          {colorOption.name}
                         </option>
                       ))}
                     </select>
