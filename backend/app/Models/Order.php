@@ -26,6 +26,7 @@ class Order extends Model
         'merchant_payout',
         'payment_method',
         'payment_status',
+        'payment_transaction_id',
         'payment_details',
         'shipping_address',
         'billing_address',
@@ -34,6 +35,7 @@ class Order extends Model
         'notes',
         'shipped_at',
         'delivered_at',
+        'paid_at',
     ];
 
     protected $casts = [
