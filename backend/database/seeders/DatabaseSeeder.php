@@ -4,10 +4,15 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use App\Models\Merchant;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Artwork;
+use App\Models\MerchandiseType;
+use App\Models\PlacementOption;
+use App\Services\MockupService;
 
 class DatabaseSeeder extends Seeder
 {
@@ -122,139 +127,305 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        // Create Products - Distributed among creators
+        // Seed Merchandise Types and Placement Options first
+        $this->call(MerchandiseSeeder::class);
+
+        // Get merchandise types and placements
+        $tshirtRegular = MerchandiseType::where('slug', 't-shirt-regular')->first();
+        $tshirtOversize = MerchandiseType::where('slug', 't-shirt-oversize')->first();
+        $frontPlacement = PlacementOption::where('slug', 'front')->first();
+        $backPlacement = PlacementOption::where('slug', 'back')->first();
+
+        // Create sample artworks for each creator
+        $artworks = $this->createArtworks($creator1, $creator2, $creator3);
+
+        // Initialize MockupService
+        $mockupService = new MockupService();
+
+        // Create Products - All as T-Shirts with mockups
         $products = [
-            // Creator 1 - ToBeAwesome Studio (Electronics)
+            // Creator 1 - Gottabe Studio T-Shirts
             [
                 'merchant_id' => $creator1->id,
-                'category_id' => $electronics->id,
-                'name' => 'Awesome Wireless Headphones',
-                'slug' => 'awesome-wireless-headphones',
-                'description' => 'Premium noise-cancelling wireless headphones with 30-hour battery life. Experience crystal-clear audio and deep bass.',
-                'price' => 2999.00,
-                'sale_price' => 2499.00,
-                'stock' => 50,
+                'category_id' => $fashion->id,
+                'merchandise_type_id' => $tshirtRegular->id,
+                'artwork_id' => $artworks['creator1'][0]->id,
+                'placement_option_id' => $frontPlacement->id,
+                'name' => 'Sunset Dreams T-Shirt',
+                'description' => 'Beautiful sunset gradient design on premium cotton t-shirt. Express your love for nature with this stunning artwork.',
+                'price' => 499.00,
+                'sale_price' => 399.00,
+                'stock' => 100,
+                'size' => 'M',
+                'color' => '#FFFFFF',
                 'is_featured' => true,
                 'is_active' => true,
                 'rating' => 4.5,
                 'total_reviews' => 125,
-                'images' => ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500'],
             ],
             [
                 'merchant_id' => $creator1->id,
-                'category_id' => $electronics->id,
-                'name' => 'Smart Watch Pro',
-                'slug' => 'smart-watch-pro',
-                'description' => 'Advanced fitness tracking, heart rate monitor, and smartphone notifications. Water-resistant design with AMOLED display.',
-                'price' => 8999.00,
-                'sale_price' => 7499.00,
-                'stock' => 30,
+                'category_id' => $fashion->id,
+                'merchandise_type_id' => $tshirtOversize->id,
+                'artwork_id' => $artworks['creator1'][1]->id,
+                'placement_option_id' => $frontPlacement->id,
+                'name' => 'Abstract Waves Oversize Tee',
+                'description' => 'Trendy oversize fit with bold abstract wave design. Perfect for casual streetwear style.',
+                'price' => 549.00,
+                'sale_price' => 449.00,
+                'stock' => 80,
+                'size' => 'L',
+                'color' => '#000000',
                 'is_featured' => true,
                 'is_active' => true,
                 'rating' => 4.7,
                 'total_reviews' => 89,
-                'images' => ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500'],
             ],
 
-            // Creator 2 - TechVibe Designs (Electronics)
+            // Creator 2 - TechVibe Designs T-Shirts
             [
                 'merchant_id' => $creator2->id,
-                'category_id' => $electronics->id,
-                'name' => 'Wireless Bluetooth Speaker',
-                'slug' => 'wireless-bluetooth-speaker',
-                'description' => 'Portable waterproof speaker with 360-degree sound. Perfect for outdoor adventures.',
-                'price' => 1499.00,
-                'sale_price' => 1199.00,
+                'category_id' => $fashion->id,
+                'merchandise_type_id' => $tshirtRegular->id,
+                'artwork_id' => $artworks['creator2'][0]->id,
+                'placement_option_id' => $backPlacement->id,
+                'name' => 'Cyber Circuit T-Shirt',
+                'description' => 'Tech-inspired circuit board design. For those who live and breathe technology.',
+                'price' => 499.00,
                 'stock' => 75,
+                'size' => 'M',
+                'color' => '#FFFFFF',
                 'is_active' => true,
                 'rating' => 4.3,
                 'total_reviews' => 54,
-                'images' => ['https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500'],
             ],
             [
                 'merchant_id' => $creator2->id,
-                'category_id' => $electronics->id,
-                'name' => 'USB-C Fast Charger',
-                'slug' => 'usb-c-fast-charger',
-                'description' => 'Ultra-fast charging with multiple ports. Compatible with all devices.',
-                'price' => 799.00,
-                'sale_price' => 599.00,
+                'category_id' => $fashion->id,
+                'merchandise_type_id' => $tshirtOversize->id,
+                'artwork_id' => $artworks['creator2'][1]->id,
+                'placement_option_id' => $frontPlacement->id,
+                'name' => 'Digital Dreams Oversize',
+                'description' => 'Futuristic digital art on comfortable oversize tee. Stand out from the crowd.',
+                'price' => 549.00,
                 'stock' => 100,
+                'size' => 'XL',
+                'color' => '#1E293B',
                 'is_active' => true,
                 'rating' => 4.6,
                 'total_reviews' => 78,
-                'images' => ['https://images.unsplash.com/photo-1591290619762-d4b2b5a2b0c0?w=500'],
             ],
 
-            // Creator 3 - Artistic Touch (Fashion & Home)
+            // Creator 3 - Artistic Touch T-Shirts
             [
                 'merchant_id' => $creator3->id,
                 'category_id' => $fashion->id,
-                'name' => 'Premium Leather Bag',
-                'slug' => 'premium-leather-bag',
-                'description' => 'Handcrafted genuine leather messenger bag. Perfect for work or travel with multiple compartments.',
-                'price' => 3999.00,
-                'stock' => 25,
+                'merchandise_type_id' => $tshirtRegular->id,
+                'artwork_id' => $artworks['creator3'][0]->id,
+                'placement_option_id' => $frontPlacement->id,
+                'name' => 'Artistic Expression Tee',
+                'description' => 'Handcrafted artistic design that speaks volumes. Wear your creativity proudly.',
+                'price' => 599.00,
+                'stock' => 60,
+                'size' => 'M',
+                'color' => '#FFFFFF',
                 'is_featured' => true,
                 'is_active' => true,
                 'rating' => 4.8,
                 'total_reviews' => 67,
-                'images' => ['https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500'],
             ],
             [
                 'merchant_id' => $creator3->id,
                 'category_id' => $fashion->id,
-                'name' => 'Designer Sunglasses',
-                'slug' => 'designer-sunglasses',
-                'description' => 'UV400 protection polarized lenses. Stylish frame suitable for any occasion.',
-                'price' => 899.00,
-                'sale_price' => 699.00,
-                'stock' => 100,
-                'is_active' => true,
-                'rating' => 4.4,
-                'total_reviews' => 43,
-                'images' => ['https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500'],
-            ],
-            [
-                'merchant_id' => $creator3->id,
-                'category_id' => $homeAndLiving->id,
-                'name' => 'Ceramic Plant Pot Set',
-                'slug' => 'ceramic-plant-pot-set',
-                'description' => 'Set of 3 minimalist ceramic pots perfect for succulents and small plants. Includes drainage holes.',
-                'price' => 599.00,
-                'stock' => 60,
-                'is_active' => true,
-                'rating' => 4.6,
-                'total_reviews' => 38,
-                'images' => ['https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500'],
-            ],
-            [
-                'merchant_id' => $creator3->id,
-                'category_id' => $homeAndLiving->id,
-                'name' => 'Handmade Wall Art',
-                'slug' => 'handmade-wall-art',
-                'description' => 'Original abstract canvas art. Adds personality to any room.',
-                'price' => 2499.00,
-                'stock' => 15,
+                'merchandise_type_id' => $tshirtOversize->id,
+                'artwork_id' => $artworks['creator3'][1]->id,
+                'placement_option_id' => $frontPlacement->id,
+                'name' => 'Modern Art Oversize Tee',
+                'description' => 'Contemporary art meets street fashion. Oversize comfort with artistic flair.',
+                'price' => 649.00,
+                'sale_price' => 549.00,
+                'stock' => 50,
+                'size' => 'L',
+                'color' => '#F3F4F6',
                 'is_featured' => true,
                 'is_active' => true,
                 'rating' => 4.9,
                 'total_reviews' => 56,
-                'images' => ['https://images.unsplash.com/photo-1561214115-f2f134cc4912?w=500'],
             ],
         ];
 
+        // Create products with mockup generation
         foreach ($products as $productData) {
-            Product::create($productData);
-        }
+            try {
+                // Generate mockup
+                $mockupPath = $mockupService->generateMockup(
+                    $productData['merchandise_type_id'],
+                    $productData['artwork_id'],
+                    $productData['placement_option_id'],
+                    $productData['color']
+                );
 
-        // Seed Merchandise Types and Placement Options
-        $this->call(MerchandiseSeeder::class);
+                $productData['mockup_image'] = $mockupPath;
+                $productData['images'] = [$mockupService->getMockupUrl($mockupPath)];
+
+                Product::create($productData);
+                echo "✓ Created product: {$productData['name']}\n";
+            } catch (\Exception $e) {
+                echo "✗ Failed to create product: {$productData['name']} - {$e->getMessage()}\n";
+            }
+        }
 
         echo "\n✅ Database seeded successfully!\n";
         echo "📧 Demo accounts:\n";
         echo "   Customer: customer@demo.com / password\n";
         echo "   Creator: creator@demo.com / password\n";
         echo "   Admin: admin@demo.com / password\n\n";
+    }
+
+    /**
+     * Create sample artworks for creators
+     */
+    private function createArtworks($creator1, $creator2, $creator3): array
+    {
+        $artworkPath = storage_path('app/public/artworks');
+        if (!file_exists($artworkPath)) {
+            mkdir($artworkPath, 0755, true);
+        }
+
+        $artworks = [
+            'creator1' => [],
+            'creator2' => [],
+            'creator3' => [],
+        ];
+
+        // Creator 1 Artworks - Sunset theme
+        $artworks['creator1'][] = $this->createArtworkImage(
+            $creator1,
+            'Sunset Dreams',
+            'sunset-dreams',
+            '#FF6B6B',
+            '#FFE66D',
+            '#4ECDC4'
+        );
+
+        $artworks['creator1'][] = $this->createArtworkImage(
+            $creator1,
+            'Abstract Waves',
+            'abstract-waves',
+            '#6C5CE7',
+            '#A29BFE',
+            '#74B9FF'
+        );
+
+        // Creator 2 Artworks - Tech theme
+        $artworks['creator2'][] = $this->createArtworkImage(
+            $creator2,
+            'Cyber Circuit',
+            'cyber-circuit',
+            '#00B894',
+            '#00CEC9',
+            '#81ECEC'
+        );
+
+        $artworks['creator2'][] = $this->createArtworkImage(
+            $creator2,
+            'Digital Dreams',
+            'digital-dreams',
+            '#FD79A8',
+            '#FDCB6E',
+            '#E17055'
+        );
+
+        // Creator 3 Artworks - Artistic theme
+        $artworks['creator3'][] = $this->createArtworkImage(
+            $creator3,
+            'Artistic Expression',
+            'artistic-expression',
+            '#F093FB',
+            '#F5576C',
+            '#4FACFE'
+        );
+
+        $artworks['creator3'][] = $this->createArtworkImage(
+            $creator3,
+            'Modern Art',
+            'modern-art',
+            '#43E97B',
+            '#38F9D7',
+            '#667EEA'
+        );
+
+        return $artworks;
+    }
+
+    /**
+     * Create an artwork image and database record
+     */
+    private function createArtworkImage($creator, $name, $slug, $color1, $color2, $color3)
+    {
+        $width = 400;
+        $height = 400;
+        $image = imagecreatetruecolor($width, $height);
+
+        // Enable alpha blending
+        imagealphablending($image, true);
+        imagesavealpha($image, true);
+
+        // Parse colors
+        $c1 = $this->hexToRgb($color1);
+        $c2 = $this->hexToRgb($color2);
+        $c3 = $this->hexToRgb($color3);
+
+        // Create gradient background
+        for ($y = 0; $y < $height; $y++) {
+            $ratio = $y / $height;
+            $r = (int)($c1[0] * (1 - $ratio) + $c2[0] * $ratio);
+            $g = (int)($c1[1] * (1 - $ratio) + $c2[1] * $ratio);
+            $b = (int)($c1[2] * (1 - $ratio) + $c2[2] * $ratio);
+            $color = imagecolorallocate($image, $r, $g, $b);
+            imageline($image, 0, $y, $width, $y, $color);
+        }
+
+        // Add decorative shapes
+        $shapeColor = imagecolorallocate($image, $c3[0], $c3[1], $c3[2]);
+        imagefilledellipse($image, 100, 100, 80, 80, $shapeColor);
+        imagefilledellipse($image, 300, 300, 100, 100, $shapeColor);
+        imagefilledellipse($image, 200, 250, 60, 60, $shapeColor);
+
+        // Save image
+        $filename = $slug . '-' . time() . '.png';
+        $fullPath = storage_path('app/public/artworks/' . $filename);
+        imagepng($image, $fullPath);
+        imagedestroy($image);
+
+        // Create database record
+        $artwork = Artwork::create([
+            'merchant_id' => $creator->id,
+            'name' => $name,
+            'description' => "Beautiful {$name} artwork design",
+            'file_path' => 'artworks/' . $filename,
+            'file_type' => 'png',
+            'width' => $width,
+            'height' => $height,
+            'file_size' => filesize($fullPath),
+            'is_active' => true,
+        ]);
+
+        echo "✓ Created artwork: {$name}\n";
+
+        return $artwork;
+    }
+
+    /**
+     * Convert hex color to RGB array
+     */
+    private function hexToRgb($hex): array
+    {
+        $hex = ltrim($hex, '#');
+        return [
+            hexdec(substr($hex, 0, 2)),
+            hexdec(substr($hex, 2, 2)),
+            hexdec(substr($hex, 4, 2))
+        ];
     }
 }
