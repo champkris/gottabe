@@ -29,6 +29,7 @@ interface Artwork {
   name: string
   description: string | null
   file_path: string
+  file_url: string
   file_type: string
   width: number
   height: number
@@ -202,7 +203,7 @@ export default function Artworks() {
               <Card key={artwork.id} className="overflow-hidden">
                 <div className="aspect-square bg-gray-100 flex items-center justify-center p-4">
                   <img
-                    src={`${import.meta.env.VITE_API_URL}/storage/${artwork.file_path}`}
+                    src={artwork.file_url}
                     alt={artwork.name}
                     className="max-w-full max-h-full object-contain"
                   />
