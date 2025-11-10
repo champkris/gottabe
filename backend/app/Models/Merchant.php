@@ -22,7 +22,7 @@ class Merchant extends Model
         'business_address',
         'logo',
         'banner',
-        'commission_rate',
+        'commission_amount',
         'is_approved',
         'approved_at',
         'business_hours',
@@ -37,7 +37,7 @@ class Merchant extends Model
         'approved_at' => 'datetime',
         'business_hours' => 'array',
         'social_links' => 'array',
-        'commission_rate' => 'decimal:2',
+        'commission_amount' => 'decimal:2',
         'rating' => 'decimal:2',
     ];
 
@@ -113,16 +113,16 @@ class Merchant extends Model
     }
 
     /**
-     * Calculate commission for an amount.
+     * Calculate commission for a given number of units sold.
+     * Commission is a fixed amount per piece, not a percentage.
      */
-    public function calculateCommission(float $amount): array
+    public function calculateCommission(int $unitsSold): array
     {
-        $commission = $amount * ($this->commission_rate / 100);
-        $payout = $amount - $commission;
+        $commission = $unitsSold * $this->commission_amount;
 
         return [
             'commission' => round($commission, 2),
-            'payout' => round($payout, 2),
+            'commission_per_unit' => $this->commission_amount,
         ];
     }
 }

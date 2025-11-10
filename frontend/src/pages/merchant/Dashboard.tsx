@@ -17,8 +17,9 @@ import toast from 'react-hot-toast'
 
 interface DashboardData {
   total_sales: number
-  commission_rate: number
+  commission_amount: number
   commission_earned: number
+  total_units_sold: number
   total_revenue: number
   total_orders: number
   total_products: number
@@ -45,7 +46,7 @@ interface DashboardData {
   }>
   creator: {
     business_name: string
-    commission_rate: number
+    commission_amount: number
   }
 }
 
@@ -96,7 +97,7 @@ export default function Dashboard() {
       icon: Percent,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
-      description: `${data?.commission_rate || 0}% commission rate`,
+      description: `฿${data?.commission_amount || 0} per piece`,
     },
     {
       title: 'Total Orders',
@@ -286,23 +287,26 @@ export default function Dashboard() {
           <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Percent className="h-5 w-5 text-green-600" />
-                Commission Rate
+                <DollarSign className="h-5 w-5 text-green-600" />
+                Commission Per Piece
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-center mb-4">
                 <p className="text-4xl font-bold text-green-600 mb-2">
-                  {data?.commission_rate || 0}%
+                  ฿{data?.commission_amount || 0}
                 </p>
                 <p className="text-sm text-gray-600">
-                  You earn {data?.commission_rate || 0}% on every sale
+                  You earn ฿{data?.commission_amount || 0} for every piece sold
                 </p>
               </div>
               <div className="p-4 bg-white rounded-lg border border-green-200">
                 <p className="text-sm text-gray-600 mb-2">Total Earnings</p>
                 <p className="text-2xl font-bold text-green-600">
                   {formatCurrency(data?.commission_earned || 0)}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  From {data?.total_units_sold || 0} pieces sold
                 </p>
               </div>
             </CardContent>

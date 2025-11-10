@@ -28,8 +28,16 @@ class MerchantDashboardController extends Controller
             ->where('orders.status', '!=', 'cancelled')
             ->sum('order_items.subtotal');
 
-        // Calculate commission earned
-        $commissionEarned = $totalSales * ($creator->commission_rate / 100);
+        // Calculate total units sold
+        $totalUnitsSold = DB::table('order_items')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->where('products.merchant_id', $creator->id)
+            ->where('orders.status', '!=', 'cancelled')
+            ->sum('order_items.quantity');
+
+        // Calculate commission earned (fixed amount per piece)
+        $commissionEarned = $totalUnitsSold * $creator->commission_amount;
 
         // Get current month sales
         $currentMonth = now()->startOfMonth();
@@ -85,8 +93,14 @@ class MerchantDashboardController extends Controller
                     ->where('orders.status', '!=', 'cancelled')
                     ->sum('order_items.subtotal');
 
+                $unitsSold = DB::table('order_items')
+                    ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                    ->where('order_items.product_id', $product->id)
+                    ->where('orders.status', '!=', 'cancelled')
+                    ->sum('order_items.quantity');
+
                 $product->revenue = $revenue;
-                $product->commission = $revenue * ($creator->commission_rate / 100);
+                $product->commission = $unitsSold * $creator->commission_amount;
                 return $product;
             });
 
@@ -108,8 +122,9 @@ class MerchantDashboardController extends Controller
 
         return response()->json([
             'total_sales' => $totalSales,
-            'commission_rate' => $creator->commission_rate,
+            'commission_amount' => $creator->commission_amount,
             'commission_earned' => $commissionEarned,
+            'total_units_sold' => $totalUnitsSold,
             'total_revenue' => $totalSales,
             'total_orders' => $totalOrders,
             'total_products' => $totalProducts,
