@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'paysolutions' => [
+        'api_url' => env('PAYSOLUTIONS_API_URL', 'https://api.paysolutions.asia'),
+        'merchant_id' => env('PAYSOLUTIONS_MERCHANT_ID'),
+        'secret_key' => env('PAYSOLUTIONS_SECRET_KEY'),
+        'return_url' => env('FRONTEND_URL', 'http://localhost:5173') . '/payment/return',
+        'callback_url' => env('APP_URL', 'http://localhost:8000') . '/api/payment/callback',
+    ],
+
 ];

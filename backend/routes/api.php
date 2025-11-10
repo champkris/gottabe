@@ -21,6 +21,7 @@ use App\Http\Controllers\Merchant\MerchantDashboardController;
 use App\Http\Controllers\Merchant\MerchantProductController;
 use App\Http\Controllers\Merchant\MerchantOrderController;
 use App\Http\Controllers\Creator\CreatorArtworkController;
+use App\Http\Controllers\PaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +56,10 @@ Route::get('/merchandise-types', [AdminMerchandiseController::class, 'index']);
 Route::get('/merchandise-types/{merchandise}', [AdminMerchandiseController::class, 'show']);
 Route::get('/placement-options', [AdminPlacementController::class, 'index']);
 
+// Payment callback routes (public - for payment gateway callbacks)
+Route::post('/payment/callback', [PaymentController::class, 'handleCallback']);
+Route::get('/payment/return', [PaymentController::class, 'handleReturn']);
+
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     // Auth routes
@@ -81,6 +86,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/products/{product}/reviews', [ReviewController::class, 'store']);
         Route::put('/reviews/{review}', [ReviewController::class, 'update']);
         Route::delete('/reviews/{review}', [ReviewController::class, 'destroy']);
+
+        // Payment routes (authenticated)
+        Route::post('/payment/initiate', [PaymentController::class, 'initiatePayment']);
+        Route::get('/payment/status/{order}', [PaymentController::class, 'checkStatus']);
     });
 
     // Creator routes

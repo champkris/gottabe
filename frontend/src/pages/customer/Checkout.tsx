@@ -28,7 +28,7 @@ export default function Checkout() {
     shipping_country: 'United States',
 
     // Payment Information
-    payment_method: 'card',
+    payment_method: 'paysolutions',
     card_number: '',
     card_name: '',
     card_expiry: '',
@@ -100,10 +100,34 @@ export default function Checkout() {
       }
 
       const response = await api.post('/orders', orderData)
+      const order = response.data.order
+
+      // If PaySolutions payment, initiate payment gateway
+      if (formData.payment_method === 'paysolutions') {
+        try {
+          const paymentResponse = await api.post('/payment/initiate', {
+            order_id: order.id
+          })
+
+          if (paymentResponse.data.success && paymentResponse.data.payment_url) {
+            toast.success('Redirecting to payment gateway...')
+            // Redirect to PaySolutions payment page
+            window.location.href = paymentResponse.data.payment_url
+            return
+          } else {
+            throw new Error('Failed to initiate payment')
+          }
+        } catch (paymentError: any) {
+          console.error('Payment initiation failed:', paymentError)
+          toast.error('Payment initiation failed. Please try again.')
+          navigate(`/customer/orders/${order.id}`)
+          return
+        }
+      }
 
       toast.success('Order placed successfully!')
       clearCart()
-      navigate(`/customer/orders/${response.data.order.id}`)
+      navigate(`/customer/orders/${order.id}`)
     } catch (error: any) {
       console.error('Failed to place order:', error)
       toast.error(error.response?.data?.message || 'Failed to place order. Please try again.')
@@ -244,7 +268,20 @@ export default function Checkout() {
                 {/* Payment Method Selection */}
                 <div className="mb-6">
                   <label className="block text-sm font-medium mb-3">Payment Method</label>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, payment_method: 'paysolutions' }))}
+                      className={`p-4 border-2 rounded-lg transition ${
+                        formData.payment_method === 'paysolutions'
+                          ? 'border-primary bg-primary/5'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <CreditCard className="h-6 w-6 mx-auto mb-2" />
+                      <p className="text-sm font-medium">PaySolutions</p>
+                      <p className="text-xs text-gray-500 mt-1">Credit/Debit/QR</p>
+                    </button>
                     <button
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, payment_method: 'card' }))}
@@ -255,7 +292,7 @@ export default function Checkout() {
                       }`}
                     >
                       <CreditCard className="h-6 w-6 mx-auto mb-2" />
-                      <p className="text-sm font-medium">Credit/Debit Card</p>
+                      <p className="text-sm font-medium">Direct Card</p>
                     </button>
                     <button
                       type="button"
@@ -271,6 +308,19 @@ export default function Checkout() {
                     </button>
                   </div>
                 </div>
+
+                {/* PaySolutions Info */}
+                {formData.payment_method === 'paysolutions' && (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800 mb-2 font-medium">
+                      Secure Payment with PaySolutions
+                    </p>
+                    <p className="text-xs text-blue-700">
+                      You will be redirected to PaySolutions secure payment page to complete your payment.
+                      Supports credit cards, debit cards, and QR payment methods.
+                    </p>
+                  </div>
+                )}
 
                 {/* Card Details */}
                 {formData.payment_method === 'card' && (
