@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
-import api from '@/lib/api'
+import api from '@/lib/axios'
 
 export default function PaymentReturn() {
   const [searchParams] = useSearchParams()
