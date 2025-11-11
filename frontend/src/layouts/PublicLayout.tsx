@@ -35,13 +35,13 @@ export default function PublicLayout() {
         <div className="container mx-auto px-4">
           {/* Top Bar */}
           <div className="flex items-center justify-between py-4 border-b">
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-2 md:gap-8">
               {/* Logo */}
-              <Link to="/" className="flex items-center gap-2">
+              <Link to="/" className="flex items-center gap-2 flex-shrink-0">
                 <img
                   src="/images/gottabe_logo.png"
                   alt="Gottabe"
-                  className="h-8 w-auto"
+                  className="h-6 sm:h-7 md:h-8 w-auto object-contain"
                 />
               </Link>
 
