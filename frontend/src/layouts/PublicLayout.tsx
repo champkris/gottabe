@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom'
-import { ShoppingCart, User, Menu, Search, Heart } from 'lucide-react'
+import { ShoppingCart, User, Menu, Search } from 'lucide-react'
 import { useState } from 'react'
 import { useAuthStore } from '@/stores/authStore'
 import { useCartStore } from '@/stores/cartStore'
@@ -78,14 +78,6 @@ export default function PublicLayout() {
 
             {/* Right Actions */}
             <div className="flex items-center gap-4">
-              {/* Wishlist */}
-              <button className="relative p-2 hover:bg-gray-100 rounded-lg transition">
-                <Heart className="h-6 w-6 text-gray-700" />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  0
-                </span>
-              </button>
-
               {/* Cart */}
               <Link to="/customer/cart" className="relative p-2 hover:bg-gray-100 rounded-lg transition">
                 <ShoppingCart className="h-6 w-6 text-gray-700" />
